@@ -1,0 +1,43 @@
+{
+  "app": {
+    "name": "BaziLens",
+    "tagline": "传统命理研究工具"
+  },
+  "nav": {
+    "home": "首页",
+    "charts": "我的命盘",
+    "readings": "解读历史",
+    "reports": "详批报告",
+    "account": "账户"
+  },
+  "common": {
+    "loading": "加载中…",
+    "save": "保存",
+    "cancel": "取消",
+    "confirm": "确认",
+    "back": "返回"
+  },
+  "auth": {
+    "signIn": "登录",
+    "signUp": "注册",
+    "signOut": "退出",
+    "magicLink": "邮箱验证链接登录",
+    "google": "使用 Google 登录",
+    "apple": "使用 Apple 登录"
+  },
+  "cookie": {
+    "intro": "我们使用 Cookie 提供服务、分析使用情况并改进体验。",
+    "policy": "隐私政策",
+    "necessary": "必要",
+    "required": "必需",
+    "analytics": "性能分析",
+    "errors": "错误监控",
+    "accept_all": "全部接受",
+    "necessary_only": "仅必要",
+    "customize": "自定义",
+    "save": "保存"
+  },
+  "disclaimer": {
+    "footer": "本工具基于传统命理研究，仅供文化参考与个人探索，不构成医疗、法律、财务、投资或心理咨询建议。"
+  }
+}

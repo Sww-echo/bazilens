@@ -1,0 +1,120 @@
+@import "tailwindcss";
+
+/* =============================================================================
+ * BaziLens Design Tokens (青墨方向 — see docs/UI_BRIEF.md §2)
+ * Tailwind v4 CSS-first config: tokens become utilities automatically.
+ *   bg-paper, text-ink, bg-vermilion, text-jade, etc.
+ * ============================================================================= */
+
+@theme {
+  /* Brand palette */
+  --color-ink:       #1A2332;   /* deep ink — primary text + nav */
+  --color-ink-soft:  #2C3848;
+  --color-paper:     #F5F1E8;   /* xuanzhi paper — page background */
+  --color-paper-2:   #EBE6D8;
+  --color-vermilion: #C8553D;   /* zhusha red — primary CTA */
+  --color-vermilion-soft: #E07A65;
+  --color-jade:      #7A9E9F;
+  --color-bronze:    #C4A661;
+
+  /* Neutral scale (warm) */
+  --color-mist-50:  #FAF7EE;
+  --color-mist-100: #F0EBDD;
+  --color-mist-200: #DCD5C2;
+  --color-mist-300: #B3AC97;
+  --color-mist-400: #898371;
+  --color-mist-500: #5C5648;
+  --color-mist-600: #3F3B30;
+  --color-mist-900: #1A1A1A;
+
+  /* Typography */
+  --font-sans: "Inter", "PingFang SC", "Microsoft YaHei", sans-serif;
+  --font-serif: "Source Han Serif SC", "Noto Serif SC", "Songti SC", "STSong", serif;
+  --font-glyph: "Source Han Serif SC", "Noto Serif SC", "Songti SC", serif;
+
+  /* Radii */
+  --radius-card: 12px;
+  --radius-button: 8px;
+  --radius-pill: 999px;
+}
+
+html, body, #root {
+  height: 100%;
+  background: var(--color-paper);
+  color: var(--color-ink);
+  font-family: var(--font-sans);
+  -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
+}
+
+body { margin: 0; }
+
+/* Subtle paper texture */
+body::before {
+  content: "";
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  z-index: -1;
+  opacity: 0.04;
+  background-image: radial-gradient(circle at 1px 1px, var(--color-ink) 1px, transparent 0);
+  background-size: 20px 20px;
+}
+
+h1, h2, h3, .serif {
+  font-family: var(--font-serif);
+  font-weight: 600;
+  letter-spacing: -0.01em;
+}
+
+.glyph {
+  font-family: var(--font-glyph);
+  font-weight: 700;
+}
+
+@layer components {
+  .btn-primary {
+    @apply inline-flex items-center justify-center gap-2 rounded-lg
+           bg-[--color-vermilion] px-5 py-2.5 text-sm font-medium
+           text-white transition-colors hover:bg-[--color-vermilion-soft]
+           focus:outline-none focus:ring-2 focus:ring-[--color-vermilion]/40;
+  }
+  .btn-secondary {
+    @apply inline-flex items-center justify-center gap-2 rounded-lg border
+           border-[--color-ink]/20 bg-white px-5 py-2.5 text-sm font-medium
+           text-[--color-ink] transition-colors hover:bg-[--color-mist-100]
+           focus:outline-none focus:ring-2 focus:ring-[--color-ink]/20;
+  }
+  .btn-ghost {
+    @apply inline-flex items-center justify-center gap-2 rounded-lg px-3 py-2
+           text-sm font-medium text-[--color-ink]/70
+           transition-colors hover:bg-[--color-mist-100] hover:text-[--color-ink];
+  }
+  .card {
+    @apply rounded-xl border border-[--color-ink]/10 bg-white p-6 shadow-sm;
+  }
+  .input {
+    @apply w-full rounded-lg border border-[--color-ink]/20 bg-white px-3 py-2
+           text-sm text-[--color-ink] placeholder:text-[--color-mist-400]
+           focus:border-[--color-ink]/40 focus:outline-none focus:ring-2 focus:ring-[--color-ink]/10;
+  }
+  .badge {
+    @apply inline-flex items-center gap-1 rounded-full px-2.5 py-0.5 text-xs font-medium;
+  }
+  .badge-free {
+    @apply inline-flex items-center gap-1 rounded-full px-2.5 py-0.5 text-xs font-medium
+           bg-[--color-mist-100] text-[--color-mist-500];
+  }
+  .badge-plus {
+    @apply inline-flex items-center gap-1 rounded-full px-2.5 py-0.5 text-xs font-medium
+           bg-[--color-jade]/15 text-[--color-jade];
+  }
+  .badge-pro {
+    @apply inline-flex items-center gap-1 rounded-full px-2.5 py-0.5 text-xs font-medium
+           bg-[--color-bronze]/15 text-[--color-bronze];
+  }
+  .badge-vermilion {
+    @apply inline-flex items-center gap-1 rounded-full px-2.5 py-0.5 text-xs font-medium
+           bg-[--color-vermilion]/12 text-[--color-vermilion];
+  }
+}

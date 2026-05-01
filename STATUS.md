@@ -1,0 +1,176 @@
+# BaziLens · Sprint 0 Build Status
+
+> Snapshot of what's been built vs. what's pending. Updated in-tree so any
+> future Claude / Cursor session can pick up without recovering context.
+
+Last updated: 2026-04-30
+
+---
+
+## ✅ Done
+
+### Documentation
+- `docs/PLAN.md` (1380 lines) — product / commercial / sprints / compliance
+- `docs/TECH_SPEC.md` (1850 lines) — DDL / Edge Function / 3-model routing / PDF / privacy
+- `.trellis/spec/` — 13 spec files distilled from the docs above:
+  - `guides/`: product-overview, sprint-roadmap, privacy-pii, apple-review, ai-quality-eval, customer-support
+  - `frontend/`: index, directory-structure, state-management, type-safety
+  - `supabase/`: index, llm-routing, migrations, edge-functions
+
+### Frontend scaffolding (`src/`)
+- API surface (`src/api/`):
+  - `client.ts` — Supabase client singleton with env validation
+  - `auth.ts` — magic link / Google OAuth / Apple OAuth / signOut
+  - `charts.ts` — createChart (via `/chart-create` Edge Fn) / list / get / favourite / delete
+  - `readings.ts` — `streamReading()` async generator + listReadings + rateReading
+  - `subscriptions.ts` — fetch / startSubscriptionCheckout / startPDFCheckout / openCustomerPortal
+  - `reports.ts` — list / get / signed download URL / Realtime progress / rate
+  - `tickets.ts` — createTicket / listMyTickets
+- Engine bridge (`src/lib/chart-builders.ts`) — wraps mingyu `calculateFullBaziChart` + `calculateFullZiweiChart` into `CreateChartInput` payload, routing PII fields to server-side encryption
+- Hooks (`src/hooks/`):
+  - `useReading` — drives streaming SSE
+  - `useReportProgress` — live PDF progress + auto signed URL
+  - `useSubscription` — sync subscription row + push to Zustand
+  - `useCharts` — list / mutate user charts
+- Zustand stores: authStore, subscriptionStore, quotaStore, consentStore
+- i18n setup with zh-CN + zh-TW locales (en pending Sprint 2)
+- Type stubs: `database.types.ts` (placeholder until `supabase gen types`), `api.types.ts`
+- Placeholder App.tsx / main.tsx (UI page implementations待 UI 稿)
+- All mingyu engines preserved untouched:
+  - `src/utils/bazi/` (31 files)
+  - `src/lib/divination/` (six divination algorithms — Sprint 2)
+  - `src/lib/iztro/` + `src/lib/full-chart-engine.ts`
+  - `src/utils/{tarot,hexagram-data,ssgw-data}.ts`
+  - `src/services/prompts/shared/question-analyzer.ts`
+
+### Backend (`supabase/`)
+- `config.toml` (Auth + OAuth Google/Apple + Storage)
+- `seed.sql` (`reports` Storage bucket + 7 PDF prompt placeholders)
+- 4 migrations:
+  - `0001_init.sql` — profiles + charts + readings + usage_quotas + subscriptions + reports + prompt_versions + RLS + handle_new_user
+  - `0002_quota_rpc.sql` — consume_reading_quota / rollback_reading_quota / consume_pdf_quota
+  - `0003_support_tickets.sql` — support_tickets + SLA view + RLS
+  - `0004_privacy_compliance.sql` — profiles status/scheduled_delete/consent + incidents table + auth.users.email sync trigger
+
+### Edge Functions (`supabase/functions/`)
+- `_shared/cors.ts` — CORS, JSON helper, `requireAuth`, `serviceClient`
+- `_shared/llm.ts` (326 lines) — three-model routing with fallback (Claude → GPT-4.1 → DeepSeek), Anthropic prompt cache
+- `_shared/crypto.ts` — AES-256-GCM PII encryption with key versioning
+- `_shared/pii-sanitize.ts` — regex PII detection (gates Free → DeepSeek)
+- `_shared/cost.ts` — provider-specific cost computation (Q1-2026 pricing)
+- `_shared/redline.ts` — quality scoring + disclaimer injection
+- `_shared/prompts.ts` — template loader + cache prefix builder + system prompt
+- `_shared/quota.ts` — RPC wrappers
+- `chart-create/index.ts` — server-side encrypted chart insertion (PII boundary)
+- `reading/index.ts` (242 lines) — streaming SSE with PII guard, fallback rollback
+- `checkout/index.ts` — Stripe Checkout (subscription + PDF dual-track) + Customer Portal helper
+- `stripe-webhook/index.ts` (219 lines) — sub events + PDF payment → triggers report-generate
+- `report-generate/index.ts` (352 lines) — async PDF pipeline: chapter orchestration → render → Storage → Resend email
+- `report-generate/chapters.ts` — 7-chapter BaZi report definitions
+- `report-generate/pdf-render.tsx` — react-pdf template (cover + chapters + appendix + bilingual disclaimer)
+- `data-export/index.ts` — GDPR Art. 15 (decrypts PII for self-export)
+- `account-delete/index.ts` — schedules 30-day grace + cancels Stripe + global signout + email
+- `scheduled-purge/index.ts` — daily cron, hard-deletes expired accounts (anonymizes financials)
+
+**Total: ~2,400 lines of Edge Function code, 4 migrations, 8 functional endpoints.**
+
+### Trellis tasks (planning state)
+- `04-30-bootstrap-rebrand` — prd + implement.jsonl filled
+- `04-30-supabase-init` — implementation done in tree, prd not yet written
+- `04-30-shared-utilities` — implementation done in tree, prd not yet written
+- `04-30-reading-edge-function` — implementation done in tree, prd not yet written
+- `04-30-stripe-checkout-webhook` — implementation done in tree, prd not yet written
+- `04-30-pdf-report-generate` — implementation done in tree, prd not yet written
+- `04-30-privacy-compliance` — implementation done in tree, prd not yet written
+
+---
+
+## ⏳ Pending — needs user action (cannot be automated)
+
+External account / key provisioning. None of these can be done by Claude on
+behalf of the user.
+
+- [ ] Register Supabase project, save URL + ANON_KEY + SERVICE_ROLE_KEY
+- [ ] Apply for Anthropic API ($10 starter)
+- [ ] Apply for OpenAI API + request **Zero Data Retention** (`zdr@openai.com`)
+- [ ] Apply for DeepSeek API
+- [ ] Register Stripe (Web KYC; bank account / Wise; W-8BEN tax form)
+- [ ] **Apply for Apple Developer ($99 — submit Day 1, takes 1-2 days)**
+- [ ] Register Resend account, verify sending domain
+- [ ] Register Sentry + PostHog (free tiers)
+- [ ] Register Vercel
+- [ ] Register social accounts: 小红书海外 + Twitter/X + 公众号订阅号
+- [ ] **Domain**: register `bazilens.com` (or fallback `bazilens.app`); configure DNS once Vercel project exists
+- [ ] **Trademark check**: USPTO + EUIPO search for "BaziLens"
+- [ ] Generate `PII_ENCRYPTION_KEY`: `openssl rand -base64 32`
+- [ ] Generate `CRON_SECRET`: `openssl rand -hex 32`
+- [ ] Create Stripe Products + Prices and tag with lookup_keys:
+  - `plus_monthly` ($4.99) / `plus_yearly` ($39.99)
+  - `pro_monthly` ($9.99) / `pro_yearly` ($79.99)
+  - `pdf_full_bazi` ($14.99)
+- [ ] Configure Supabase Auth providers: enable Google + Apple OAuth, add redirect URLs
+- [ ] Termly draft + publish Privacy Policy + Terms of Service URLs
+- [ ] Collect 20-pole golden test set (`.trellis/spec/guides/ai-quality-eval.md` §"Golden Test Set")
+- [ ] Write first SEO blog post draft (4000+ words)
+
+---
+
+## ⏳ Pending — implementation work
+
+These can be done in future sessions. Numbered in suggested execution order:
+
+### Bootstrap completion
+1. Run `npm install` and verify `npm run typecheck` passes (will likely surface
+   strict-mode issues in placeholder code; address inline).
+2. Add `tsconfig.app.json` strict-mode flags per
+   `.trellis/spec/frontend/type-safety.md`.
+
+### Supabase end-to-end
+3. `supabase init` (locally) and `supabase link --project-ref <ref>`
+4. `supabase db push` to deploy migrations to remote
+5. `supabase functions deploy reading checkout stripe-webhook report-generate
+   data-export account-delete scheduled-purge`
+6. `supabase secrets set` for: `ANTHROPIC_API_KEY`, `OPENAI_API_KEY`,
+   `DEEPSEEK_API_KEY`, `STRIPE_SECRET_KEY`, `STRIPE_WEBHOOK_SECRET`,
+   `RESEND_API_KEY`, `APP_URL`, `CORS_ALLOW_ORIGIN`, `PII_ENCRYPTION_KEY`,
+   `PII_KEY_VERSION=1`, `CRON_SECRET`.
+7. Run `npm run supabase:types` to regenerate `src/types/database.types.ts`.
+8. End-to-end smoke test:
+   - signup → magic link → profile auto-created
+   - create chart → see in DB (encrypted fields opaque)
+   - call `/reading` with curl → SSE flows
+   - Stripe Checkout PDF → webhook fires → report-generate runs
+   - download PDF from emailed signed URL
+
+### Frontend (waits on UI design)
+9. Onboarding flow + cookie consent
+10. Magic Link / Google / Apple sign-in pages
+11. Chart input form (BaZi + Ziwei) wired to `src/api/charts.ts`
+12. Streaming reading UI (consume `streamReading` async generator)
+13. Subscription / upgrade flow (call `/checkout`)
+14. PDF purchase + progress page (Realtime subscription on `reports`)
+15. Account / Subscription / Privacy / Settings pages
+16. Admin tickets page
+
+### Operations
+17. Font subsetting CI script (`scripts/build-font-subset.sh`)
+18. GitHub Actions: lint + typecheck + supabase migration linter
+19. Vercel deployment
+20. Schedule daily cron for `scheduled-purge` (Supabase pg_cron or external)
+21. Configure Sentry + PostHog projects (DSN values in `.env`)
+
+---
+
+## 🔒 Known constraints
+
+- Git commits not yet authored (git identity not set in this session). User
+  should run `git config user.name "..." && git config user.email "..."` and
+  then `git checkout -b feat/sprint-0-bootstrap && git add -A && git commit`.
+- `node_modules/` not installed — `npm install` will be needed before
+  `npm run dev` / `npm run typecheck`.
+- Edge Function bundle size: `report-generate` pulls in `@react-pdf/renderer`
+  + `resend` + `stripe`; verify size stays under Supabase 50MB limit when
+  deploying.
+- DeepSeek API: data residency in mainland China. Free tier is the ONLY
+  user-facing surface allowed to send to DeepSeek, and only after
+  `pii-sanitize.ts` regex pass clears the input.

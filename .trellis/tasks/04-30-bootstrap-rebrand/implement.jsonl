@@ -1,0 +1,6 @@
+{"file": ".trellis/spec/frontend/index.md", "reason": "Frontend 总规约，含 pre-dev checklist"}
+{"file": ".trellis/spec/frontend/directory-structure.md", "reason": "目录脚手架的权威定义，含关键改造表"}
+{"file": ".trellis/spec/guides/product-overview.md", "reason": "Sprint 砍刀清单 + 三档功能矩阵"}
+{"file": ".trellis/spec/guides/sprint-roadmap.md", "reason": "Sprint 0 / 1 范围确认"}
+{"file": "docs/PLAN.md", "reason": "完整产品 / 商业 / 路线（如需深入参考）"}
+{"file": "docs/TECH_SPEC.md", "reason": "§1 仓库结构 / §1.2 依赖列表"}
