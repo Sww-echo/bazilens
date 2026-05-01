@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { useSearchParams } from 'react-router-dom'
+import { useNavigate, useSearchParams } from 'react-router-dom'
 import ReactMarkdown from 'react-markdown'
 import { Sparkles, RefreshCw, BatteryFull, Loader2 } from 'lucide-react'
 
@@ -7,6 +7,7 @@ import { useReading } from '@/hooks/useReading'
 import { useSubscriptionStore } from '@/stores/subscriptionStore'
 import { useQuotaStore } from '@/stores/quotaStore'
 import { rateReading } from '@/api/readings'
+import { UpgradeModal } from '@/components/UpgradeModal'
 
 const SCENES = [
   { id: 'marriage', label: '婚姻' },
@@ -34,16 +35,22 @@ const PLACEHOLDER_BULLETS = [
 
 export default function ReadingNewPage() {
   const [params] = useSearchParams()
+  const navigate = useNavigate()
   const chartId = params.get('chart_id') ?? ''
   const tier = useSubscriptionStore((s) => s.tier)
   const remaining = useQuotaStore((s) => s.remainingForTier(tier))
   const [scene, setScene] = useState<Scene>('career')
   const [stars, setStars] = useState<number>(0)
   const [rated, setRated] = useState(false)
+  const [showUpgrade, setShowUpgrade] = useState(false)
   const { text, status, error, readingId, run, reset } = useReading()
 
   async function handleRun() {
     if (!chartId) return
+    if (remaining <= 0) {
+      setShowUpgrade(true)
+      return
+    }
     setRated(false)
     setStars(0)
     await run({
@@ -179,6 +186,15 @@ export default function ReadingNewPage() {
       >
         <RefreshCw size={16} /> 重新生成
       </button>
+
+      <UpgradeModal
+        open={showUpgrade}
+        onClose={() => setShowUpgrade(false)}
+        onUpgrade={() => {
+          setShowUpgrade(false)
+          navigate('/upgrade')
+        }}
+      />
     </div>
   )
 }

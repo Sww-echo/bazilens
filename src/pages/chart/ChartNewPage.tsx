@@ -208,7 +208,8 @@ export default function ChartNewPage() {
                   onChange={(e) =>
                     update('timeIndex', e.target.value === '' ? '' : Number(e.target.value))
                   }
-                  className="w-full appearance-none border-0 border-b border-[--color-ink]/15 bg-transparent py-2 pl-9 pr-8 text-sm text-[--color-ink] focus:border-[--color-ink] focus:outline-none focus:ring-0"
+                  disabled={form.useTrueSolarTime}
+                  className="w-full appearance-none border-0 border-b border-[--color-ink]/15 bg-transparent py-2 pl-9 pr-8 text-sm text-[--color-ink] focus:border-[--color-ink] focus:outline-none focus:ring-0 disabled:opacity-60"
                 >
                   <option value="">请选择时辰</option>
                   {TIME_LABELS.map((l, i) => (
@@ -223,6 +224,45 @@ export default function ChartNewPage() {
               <p className="mt-2 text-xs text-[--color-mist-400]">
                 精确的时间能提供更准确的命盘分析。
               </p>
+
+              <label className="mt-3 flex cursor-pointer items-center gap-2 text-xs text-[--color-mist-500]">
+                <input
+                  type="checkbox"
+                  checked={form.useTrueSolarTime}
+                  onChange={(e) => update('useTrueSolarTime', e.target.checked)}
+                  className="h-3.5 w-3.5 rounded border-[--color-ink]/30"
+                />
+                我知道精确时间（启用真太阳时）
+              </label>
+
+              {form.useTrueSolarTime && (
+                <div className="mt-3 grid grid-cols-2 gap-3">
+                  <div className="relative">
+                    <input
+                      type="number"
+                      min={0}
+                      max={23}
+                      placeholder="时"
+                      value={form.birthHour}
+                      onChange={(e) => update('birthHour', e.target.value)}
+                      className="w-full border-0 border-b border-[--color-ink]/15 bg-transparent py-2 pr-8 text-sm focus:border-[--color-ink] focus:outline-none focus:ring-0"
+                    />
+                    <span className="pointer-events-none absolute right-1 top-1/2 -translate-y-1/2 text-xs text-[--color-mist-400]">时</span>
+                  </div>
+                  <div className="relative">
+                    <input
+                      type="number"
+                      min={0}
+                      max={59}
+                      placeholder="分"
+                      value={form.birthMinute}
+                      onChange={(e) => update('birthMinute', e.target.value)}
+                      className="w-full border-0 border-b border-[--color-ink]/15 bg-transparent py-2 pr-8 text-sm focus:border-[--color-ink] focus:outline-none focus:ring-0"
+                    />
+                    <span className="pointer-events-none absolute right-1 top-1/2 -translate-y-1/2 text-xs text-[--color-mist-400]">分</span>
+                  </div>
+                </div>
+              )}
             </div>
 
             {/* Location */}

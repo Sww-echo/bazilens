@@ -276,10 +276,34 @@ function FiveDonut({ data }: { data: Record<string, number> }) {
   )
 }
 
-function pillarsFromChart(_data: unknown): Pillar[] | null {
-  return null
+function pillarsFromChart(data: unknown): Pillar[] | null {
+  if (!data || typeof data !== 'object') return null
+  const d = data as {
+    pillars?: { year?: { gan: string; zhi: string }; month?: { gan: string; zhi: string }; day?: { gan: string; zhi: string }; hour?: { gan: string; zhi: string } }
+    tenGods?: Record<string, string>
+    hiddenStems?: { year?: string[]; month?: string[]; day?: string[]; hour?: string[] }
+  }
+  if (!d.pillars?.year || !d.pillars.month || !d.pillars.day || !d.pillars.hour) return null
+  const tg = d.tenGods ?? {}
+  const hs = d.hiddenStems ?? {}
+  return [
+    { label: 'Hour', tg: d.pillars.hour.gan, dz: d.pillars.hour.zhi, shenSha: tg.hour ?? '', hidden: (hs.hour ?? []).join('') },
+    { label: 'Day', tg: d.pillars.day.gan, dz: d.pillars.day.zhi, shenSha: tg.day ?? '日主', hidden: (hs.day ?? []).join(''), highlight: true },
+    { label: 'Month', tg: d.pillars.month.gan, dz: d.pillars.month.zhi, shenSha: tg.month ?? '', hidden: (hs.month ?? []).join('') },
+    { label: 'Year', tg: d.pillars.year.gan, dz: d.pillars.year.zhi, shenSha: tg.year ?? '', hidden: (hs.year ?? []).join('') },
+  ]
 }
 
-function fiveFromChart(_data: unknown): Record<string, number> | null {
-  return null
+function fiveFromChart(data: unknown): Record<string, number> | null {
+  if (!data || typeof data !== 'object') return null
+  const d = data as { wuxingStrength?: { percentages?: Record<string, number> } }
+  const p = d.wuxingStrength?.percentages
+  if (!p) return null
+  return {
+    金: Math.round(p['金'] ?? 0),
+    木: Math.round(p['木'] ?? 0),
+    水: Math.round(p['水'] ?? 0),
+    火: Math.round(p['火'] ?? 0),
+    土: Math.round(p['土'] ?? 0),
+  }
 }

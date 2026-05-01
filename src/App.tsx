@@ -9,6 +9,7 @@ import { supabase } from '@/api/client'
 const LandingPage         = lazy(() => import('@/pages/public/LandingPage'))
 const PrivacyPolicyPage   = lazy(() => import('@/pages/public/PrivacyPolicyPage'))
 const TermsPage           = lazy(() => import('@/pages/public/TermsPage'))
+const DisclaimerPage      = lazy(() => import('@/pages/public/DisclaimerPage'))
 const SignInPage          = lazy(() => import('@/pages/auth/SignInPage'))
 const AuthCallbackPage    = lazy(() => import('@/pages/auth/AuthCallbackPage'))
 const ChartListPage       = lazy(() => import('@/pages/chart/ChartListPage'))
@@ -21,6 +22,7 @@ const ReportDetailPage    = lazy(() => import('@/pages/report/ReportDetailPage')
 const AccountPage         = lazy(() => import('@/pages/account/AccountPage'))
 const UpgradePage         = lazy(() => import('@/pages/upgrade/UpgradePage'))
 const AdminTicketsPage    = lazy(() => import('@/pages/admin/TicketsPage'))
+const AdminStatusPage     = lazy(() => import('@/pages/admin/StatusPage'))
 
 export default function App() {
   const setUser = useAuthStore((s) => s.setUser)
@@ -51,6 +53,7 @@ export default function App() {
           <Route path="/" element={<LandingPage />} />
           <Route path="/privacy" element={<PrivacyPolicyPage />} />
           <Route path="/terms" element={<TermsPage />} />
+          <Route path="/disclaimer" element={<DisclaimerPage />} />
           <Route path="/auth/sign-in" element={<SignInPage />} />
           <Route path="/auth/callback" element={<AuthCallbackPage />} />
           <Route path="/charts" element={<ChartListPage />} />
@@ -63,6 +66,7 @@ export default function App() {
           <Route path="/account" element={<AccountPage />} />
           <Route path="/upgrade" element={<UpgradePage />} />
           <Route path="/admin/tickets" element={<AdminTicketsPage />} />
+          <Route path="/admin/status" element={<AdminStatusPage />} />
           <Route path="*" element={<Navigate to="/" replace />} />
         </Route>
       </Routes>

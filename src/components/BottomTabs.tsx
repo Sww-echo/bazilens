@@ -18,7 +18,7 @@ const APP_TABS: Tab[] = [
 const ADMIN_TABS: Tab[] = [
   { to: '/admin/status', labelKey: 'tab.status', defaultLabel: 'Status', icon: LayoutGrid },
   { to: '/admin/tickets', labelKey: 'tab.tickets', defaultLabel: 'Tickets', icon: Headphones },
-  { to: '/admin/profile', labelKey: 'tab.profile', defaultLabel: 'Profile', icon: User },
+  { to: '/account', labelKey: 'tab.profile', defaultLabel: 'Profile', icon: User },
 ]
 
 export function BottomTabs() {

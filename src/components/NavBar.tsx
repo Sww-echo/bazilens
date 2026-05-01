@@ -1,4 +1,4 @@
-import { Link, useLocation } from 'react-router-dom'
+import { Link } from 'react-router-dom'
 import { BookOpen, User } from 'lucide-react'
 
 import { useAuthStore } from '@/stores/authStore'
@@ -9,9 +9,6 @@ import { useAuthStore } from '@/stores/authStore'
  */
 export function NavBar() {
   const user = useAuthStore((s) => s.user)
-  const location = useLocation()
-
-  const isAdmin = location.pathname.startsWith('/admin')
 
   return (
     <header className="sticky top-0 z-40 border-b border-[--color-ink]/10 bg-[--color-paper]/95 backdrop-blur">
@@ -25,7 +22,7 @@ export function NavBar() {
         <div className="flex h-9 w-9 items-center justify-center">
           {user ? (
             <Link
-              to={isAdmin ? '/admin/profile' : '/account'}
+              to="/account"
               aria-label="account"
               className="flex h-9 w-9 items-center justify-center rounded-full bg-[--color-mist-200]/60 text-[--color-ink]/70 hover:bg-[--color-mist-200]"
             >
