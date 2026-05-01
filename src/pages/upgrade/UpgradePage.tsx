@@ -1,39 +1,21 @@
 import { useState } from 'react'
-import { Loader2, Check } from 'lucide-react'
-import { PageContainer, PageHeader } from '@/components/PageHeader'
-import { startSubscriptionCheckout, type CheckoutLookupKey } from '@/api/subscriptions'
-import { Disclaimer } from '@/components/Disclaimer'
+import { Loader2, Check, FileText } from 'lucide-react'
 
-const TIERS = [
+import { startSubscriptionCheckout, type CheckoutLookupKey } from '@/api/subscriptions'
+
+const FAQS = [
   {
-    id: 'free' as const,
-    name: 'Free',
-    monthly: 0,
-    yearly: 0,
-    perks: ['每月 3 次 DeepSeek 解读', '基础八字 + 紫微排盘', '解读历史 30 天'],
-    cta: null,
+    q: 'What is the refund policy?',
+    a: 'We offer a 7-day scholarly review period. If the insights do not meet your expectations, a full refund will be provided upon request.',
   },
   {
-    id: 'plus' as const,
-    name: 'Plus',
-    monthly: 4.99,
-    yearly: 39.99,
-    perks: ['每月 30 次 GPT-4.1 解读', '历史无限保存', '简繁双语'],
-    cta: 'plus',
-    highlight: true,
-  },
-  {
-    id: 'pro' as const,
-    name: 'Pro',
-    monthly: 9.99,
-    yearly: 79.99,
-    perks: ['每月 200 次 Claude 解读', '流年大运（Sprint 2）', '合盘对比（Sprint 2）'],
-    cta: 'pro',
+    q: 'How do I cancel my subscription?',
+    a: 'Cancellations can be managed directly through your account settings at any time. Your access will continue until the end of the current billing cycle.',
   },
 ]
 
 export default function UpgradePage() {
-  const [period, setPeriod] = useState<'monthly' | 'yearly'>('monthly')
+  const [period, setPeriod] = useState<'monthly' | 'annual'>('monthly')
   const [busyTier, setBusyTier] = useState<string | null>(null)
   const [error, setError] = useState<string | null>(null)
 
@@ -41,7 +23,8 @@ export default function UpgradePage() {
     setBusyTier(tier)
     setError(null)
     try {
-      const lookup_key: CheckoutLookupKey = `${tier}_${period}` as CheckoutLookupKey
+      const periodKey = period === 'monthly' ? 'monthly' : 'yearly'
+      const lookup_key: CheckoutLookupKey = `${tier}_${periodKey}` as CheckoutLookupKey
       const { url } = await startSubscriptionCheckout(lookup_key)
       window.location.href = url
     } catch (e) {
@@ -51,96 +34,175 @@ export default function UpgradePage() {
     }
   }
 
-  return (
-    <>
-      <PageHeader title="选择适合你的档位" subtitle="所有档位均可单独购买详批 PDF" />
-      <PageContainer>
-        {/* Period toggle */}
-        <div className="flex justify-center">
-          <div className="inline-flex rounded-full border border-[--color-ink]/15 p-1">
-            {(['monthly', 'yearly'] as const).map((p) => (
-              <button
-                key={p}
-                onClick={() => setPeriod(p)}
-                className={`rounded-full px-4 py-1.5 text-sm transition ${
-                  period === p ? 'bg-[--color-ink] text-white' : 'text-[--color-mist-500]'
-                }`}
-              >
-                {p === 'monthly' ? '月付' : '年付'}
-                {p === 'yearly' && (
-                  <span className="ml-2 rounded-full bg-[--color-vermilion]/15 px-2 py-0.5 text-xs text-[--color-vermilion]">
-                    省 17%
-                  </span>
-                )}
-              </button>
-            ))}
-          </div>
-        </div>
+  const isAnnual = period === 'annual'
 
-        {/* Tier cards */}
-        <div className="mt-10 grid gap-6 sm:grid-cols-3">
-          {TIERS.map((t) => (
-            <div
-              key={t.id}
-              className={`card relative ${t.highlight ? 'border-[--color-vermilion] shadow-md' : ''}`}
-            >
-              {t.highlight && (
-                <span className="absolute -top-3 left-1/2 -translate-x-1/2 rounded-full bg-[--color-vermilion] px-3 py-1 text-xs font-medium text-white">
-                  最受欢迎
-                </span>
-              )}
-              <h3 className="serif text-2xl">{t.name}</h3>
-              <div className="mt-2">
-                <span className="text-3xl font-semibold">${period === 'monthly' ? t.monthly : t.yearly}</span>
-                <span className="ml-1 text-sm text-[--color-mist-400]">
-                  {t.id === 'free' ? '永久' : period === 'monthly' ? '/月' : '/年'}
-                </span>
-              </div>
-              <ul className="mt-5 space-y-2 text-sm">
-                {t.perks.map((p, i) => (
-                  <li key={i} className="flex items-start gap-2">
-                    <Check size={14} className="mt-0.5 text-[--color-jade]" />
-                    {p}
-                  </li>
-                ))}
-              </ul>
-              {t.cta ? (
-                <button
-                  className={`mt-6 w-full ${t.highlight ? 'btn-primary' : 'btn-secondary'}`}
-                  onClick={() => handleCheckout(t.cta as 'plus' | 'pro')}
-                  disabled={busyTier === t.cta}
-                >
-                  {busyTier === t.cta ? <Loader2 size={16} className="animate-spin" /> : null}
-                  选择 {t.name}
-                </button>
-              ) : (
-                <p className="mt-6 text-center text-xs text-[--color-mist-400]">默认档位</p>
-              )}
+  return (
+    <div className="mx-auto max-w-3xl px-5 pb-12 pt-8">
+      <div className="text-center">
+        <h1 className="serif text-4xl font-semibold leading-tight tracking-tight">Upgrade Plans</h1>
+        <p className="mx-auto mt-3 max-w-md text-sm text-[--color-mist-500]">
+          Unlock deeper scholarly insights and advanced Bazi chart analyses.
+        </p>
+      </div>
+
+      {/* Period toggle */}
+      <div className="mt-6 flex justify-center">
+        <div className="inline-flex rounded-full bg-[--color-mist-200]/60 p-1">
+          <button
+            onClick={() => setPeriod('monthly')}
+            className={`rounded-full px-6 py-1.5 text-sm font-medium transition-colors ${
+              !isAnnual ? 'bg-[--color-ink] text-white shadow-sm' : 'text-[--color-mist-500]'
+            }`}
+          >
+            Monthly
+          </button>
+          <button
+            onClick={() => setPeriod('annual')}
+            className={`rounded-full px-6 py-1.5 text-sm font-medium transition-colors ${
+              isAnnual ? 'bg-[--color-ink] text-white shadow-sm' : 'text-[--color-mist-500]'
+            }`}
+          >
+            Annual
+          </button>
+        </div>
+      </div>
+
+      {/* Tier cards */}
+      <div className="mt-8 space-y-5">
+        <TierCard
+          name="Free"
+          price={0}
+          period={isAnnual ? '/yr' : '/mo'}
+          perks={['Basic Bazi Chart Generation', 'Daily Element Overview']}
+          cta={{ label: 'Current Plan', kind: 'ghost', disabled: true }}
+        />
+
+        <TierCard
+          name="Plus"
+          price={isAnnual ? 49.99 : 4.99}
+          period={isAnnual ? '/yr' : '/mo'}
+          perks={['Advanced Pillar Interactions', 'Monthly Forecasts', 'Save up to 10 Charts']}
+          highlight
+          cta={{
+            label: busyTier === 'plus' ? 'Loading…' : 'Upgrade to Plus',
+            kind: 'primary',
+            disabled: busyTier === 'plus',
+            onClick: () => handleCheckout('plus'),
+          }}
+        />
+
+        <TierCard
+          name="Pro"
+          price={isAnnual ? 99.99 : 9.99}
+          period={isAnnual ? '/yr' : '/mo'}
+          perks={['Everything in Plus', 'Unlimited Saved Charts', 'AI Reading Integration']}
+          cta={{
+            label: busyTier === 'pro' ? 'Loading…' : 'Upgrade to Pro',
+            kind: 'ghost',
+            disabled: busyTier === 'pro',
+            onClick: () => handleCheckout('pro'),
+          }}
+        />
+      </div>
+
+      {/* PDF one-time */}
+      <section id="pdf" className="mt-10 rounded-xl border border-[--color-ink]/10 bg-white p-6 shadow-sm">
+        <div className="flex items-start gap-3">
+          <FileText size={22} className="mt-1.5 text-[--color-ink]" />
+          <h2 className="serif text-2xl font-semibold leading-tight">
+            One-time<br />Detailed PDF Report
+          </h2>
+        </div>
+        <p className="mt-3 text-sm text-[--color-mist-500]">
+          A comprehensive, beautifully typeset 20-page document analyzing your lifetime pillars.
+        </p>
+        <p className="mt-4 text-[11px] font-semibold uppercase tracking-wider text-[--color-mist-500]">
+          No Subscription Needed
+        </p>
+        <p className="mt-1 text-right">
+          <span className="serif text-3xl font-semibold">$14.99</span>
+        </p>
+        <button className="mt-4 flex w-full items-center justify-center gap-2 rounded-md border border-[--color-ink]/15 bg-white px-4 py-3 text-sm font-semibold uppercase tracking-wider text-[--color-ink] hover:bg-[--color-mist-50]">
+          Purchase Report
+        </button>
+      </section>
+
+      {/* FAQ */}
+      <section className="mt-12">
+        <h2 className="serif text-center text-3xl font-semibold leading-tight">
+          Frequently Asked<br />Questions
+        </h2>
+        <div className="mx-auto mt-4 h-px w-12 bg-[--color-mist-300]" />
+        <div className="mt-6 space-y-6">
+          {FAQS.map((f, i) => (
+            <div key={i} className="border-b border-[--color-ink]/8 pb-6 last:border-0">
+              <h3 className="serif text-xl font-semibold">{f.q}</h3>
+              <p className="mt-3 text-sm leading-relaxed text-[--color-mist-500]">{f.a}</p>
             </div>
           ))}
         </div>
+      </section>
 
-        {/* PDF callout */}
-        <div id="pdf" className="mt-12 card border-2 border-[--color-bronze]/40 bg-[--color-bronze]/5">
-          <div className="flex flex-col items-center justify-between gap-4 sm:flex-row">
-            <div>
-              <span className="badge bg-[--color-bronze]/15 text-[--color-bronze]">单独购买</span>
-              <h3 className="serif mt-2 text-xl">详批 PDF · 八字一生总论</h3>
-              <p className="mt-1 text-sm text-[--color-mist-500]">
-                7 章 5000-8000 字，专业排版可下载收藏。
-              </p>
-            </div>
-            <div className="text-center sm:text-right">
-              <div className="text-3xl font-semibold">$14.99</div>
-              <p className="text-xs text-[--color-mist-500]">单次付费 · 不订阅</p>
-            </div>
-          </div>
-        </div>
+      {error && <p className="mt-6 text-center text-sm text-[--color-vermilion]">{error}</p>}
+    </div>
+  )
+}
 
-        {error && <p className="mt-4 text-center text-sm text-[--color-vermilion]">{error}</p>}
+type Cta = { label: string; kind: 'primary' | 'ghost'; disabled?: boolean; onClick?: () => void }
 
-        <Disclaimer />
-      </PageContainer>
-    </>
+function TierCard({
+  name,
+  price,
+  period,
+  perks,
+  highlight,
+  cta,
+}: {
+  name: string
+  price: number
+  period: string
+  perks: string[]
+  highlight?: boolean
+  cta: Cta
+}) {
+  return (
+    <article
+      className={`relative rounded-xl border bg-white p-6 shadow-sm ${
+        highlight ? 'border-[--color-ink]' : 'border-[--color-ink]/10'
+      }`}
+    >
+      {highlight && (
+        <span className="absolute -top-3 left-1/2 -translate-x-1/2 rounded bg-[--color-ink] px-4 py-1 text-[10px] font-bold uppercase tracking-[0.2em] text-white">
+          Recommended
+        </span>
+      )}
+      <h3 className="serif text-2xl font-semibold">{name}</h3>
+      <p className="mt-2 flex items-baseline gap-1">
+        <span className="serif text-5xl font-semibold tracking-tight">${price}</span>
+        <span className="text-sm text-[--color-mist-500]">{period}</span>
+      </p>
+
+      <ul className="mt-5 space-y-3 text-sm">
+        {perks.map((p) => (
+          <li key={p} className="flex items-start gap-2">
+            <Check size={16} className="mt-0.5 flex-none text-[--color-ink]" strokeWidth={2.5} />
+            <span>{p}</span>
+          </li>
+        ))}
+      </ul>
+
+      <button
+        disabled={cta.disabled}
+        onClick={cta.onClick}
+        className={`mt-6 flex w-full items-center justify-center gap-2 rounded-md px-4 py-3 text-sm font-semibold uppercase tracking-wider transition-colors ${
+          cta.kind === 'primary'
+            ? 'bg-[--color-vermilion] text-white hover:bg-[--color-vermilion-soft] disabled:opacity-60'
+            : 'border border-[--color-ink]/15 bg-white text-[--color-ink] hover:bg-[--color-mist-50] disabled:opacity-60'
+        }`}
+      >
+        {cta.disabled && cta.label === 'Loading…' && <Loader2 size={14} className="animate-spin" />}
+        {cta.label}
+      </button>
+    </article>
   )
 }

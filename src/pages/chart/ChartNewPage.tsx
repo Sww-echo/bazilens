@@ -1,14 +1,25 @@
 import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { Loader2 } from 'lucide-react'
-import { PageContainer, PageHeader } from '@/components/PageHeader'
-import { useCharts } from '@/hooks/useCharts'
-import { buildBaziChartInput, buildZiweiChartInput, buildCombinedChartInput, type ChartFormInput } from '@/lib/chart-builders'
+import { ArrowLeft, ChevronDown, Clock, MapPin, Sparkles, Loader2 } from 'lucide-react'
 
-const TIME_INDEX_LABELS = [
-  '子时 23:00-01:00', '丑时 01:00-03:00', '寅时 03:00-05:00', '卯时 05:00-07:00',
-  '辰时 07:00-09:00', '巳时 09:00-11:00', '午时 11:00-13:00', '未时 13:00-15:00',
-  '申时 15:00-17:00', '酉时 17:00-19:00', '戌时 19:00-21:00', '亥时 21:00-23:00',
+import { useCharts } from '@/hooks/useCharts'
+import {
+  buildBaziChartInput,
+  buildZiweiChartInput,
+  buildCombinedChartInput,
+  type ChartFormInput,
+} from '@/lib/chart-builders'
+
+const TIME_LABELS = [
+  '子时 (23:00-00:59)', '丑时 (01:00-02:59)', '寅时 (03:00-04:59)', '卯时 (05:00-06:59)',
+  '辰时 (07:00-08:59)', '巳时 (09:00-10:59)', '午时 (11:00-12:59)', '未时 (13:00-14:59)',
+  '申时 (15:00-16:59)', '酉时 (17:00-18:59)', '戌时 (19:00-20:59)', '亥时 (21:00-22:59)',
+]
+
+const VARIANTS: { v: 'bazi' | 'ziwei' | 'combined'; label: string }[] = [
+  { v: 'bazi', label: '八字' },
+  { v: 'ziwei', label: '紫微' },
+  { v: 'combined', label: '八字+紫微' },
 ]
 
 export default function ChartNewPage() {
@@ -17,14 +28,14 @@ export default function ChartNewPage() {
   const [busy, setBusy] = useState(false)
   const [error, setError] = useState<string | null>(null)
 
-  const [variant, setVariant] = useState<'bazi' | 'ziwei' | 'combined'>('combined')
+  const [variant, setVariant] = useState<'bazi' | 'ziwei' | 'combined'>('bazi')
   const [form, setForm] = useState<ChartFormInput>({
     title: '',
     gender: 'male',
     dateType: 'solar',
-    year: '1995',
-    month: '6',
-    day: '15',
+    year: '1991',
+    month: '5',
+    day: '20',
     isLeapMonth: false,
     timeIndex: 6,
     useTrueSolarTime: false,
@@ -59,136 +70,312 @@ export default function ChartNewPage() {
   }
 
   return (
-    <>
-      <PageHeader title="创建新命盘" subtitle="填写出生信息开始排盘" />
-      <PageContainer>
-        <form onSubmit={submit} className="card mx-auto max-w-2xl space-y-6">
-          {/* Variant tabs */}
-          <div className="inline-flex rounded-lg border border-[--color-ink]/15 p-1">
-            {[
-              { v: 'combined', label: '八字 + 紫微（推荐）' },
-              { v: 'bazi', label: '仅八字' },
-              { v: 'ziwei', label: '仅紫微' },
-            ].map((opt) => (
-              <button
-                key={opt.v}
-                type="button"
-                onClick={() => setVariant(opt.v as typeof variant)}
-                className={`rounded-md px-3 py-1.5 text-sm transition ${
-                  variant === opt.v ? 'bg-[--color-ink] text-white' : 'text-[--color-mist-500]'
-                }`}
-              >
-                {opt.label}
-              </button>
-            ))}
-          </div>
+    <div className="flex min-h-screen flex-col bg-[--color-paper]">
+      {/* Header */}
+      <header className="sticky top-0 z-30 border-b border-[--color-ink]/10 bg-[--color-paper]">
+        <div className="mx-auto flex h-14 max-w-3xl items-center px-4">
+          <button
+            type="button"
+            onClick={() => navigate(-1)}
+            aria-label="back"
+            className="flex h-9 w-9 items-center justify-center rounded-full text-[--color-ink] hover:bg-[--color-mist-100]"
+          >
+            <ArrowLeft size={20} />
+          </button>
+          <h1 className="serif flex-1 text-center text-lg font-semibold">创建新命盘</h1>
+          <span className="w-9" />
+        </div>
+      </header>
 
-          {/* Title */}
-          <Field label="命盘名称（可选）">
-            <input
-              className="input"
-              placeholder="如：我的本命盘"
-              value={form.title}
-              onChange={(e) => update('title', e.target.value)}
-            />
-          </Field>
-
-          {/* Gender */}
-          <Field label="性别">
-            <div className="flex gap-3">
-              <Radio checked={form.gender === 'male'} onChange={() => update('gender', 'male')}>男</Radio>
-              <Radio checked={form.gender === 'female'} onChange={() => update('gender', 'female')}>女</Radio>
+      <form onSubmit={submit} className="flex flex-1 flex-col">
+        {/* Top section — variant tabs, name, gender (paper-2 background) */}
+        <section className="bg-[--color-paper-2]/55 px-5 pb-7 pt-4">
+          <div className="mx-auto max-w-3xl">
+            {/* Variant tabs */}
+            <div className="grid grid-cols-3 text-sm">
+              {VARIANTS.map((opt) => {
+                const active = variant === opt.v
+                return (
+                  <button
+                    key={opt.v}
+                    type="button"
+                    onClick={() => setVariant(opt.v)}
+                    className={`relative pb-3 pt-2 transition-colors ${
+                      active ? 'font-semibold text-[--color-vermilion]' : 'text-[--color-mist-500]'
+                    }`}
+                  >
+                    {opt.label}
+                    {active && (
+                      <span className="absolute inset-x-6 -bottom-px h-0.5 rounded-full bg-[--color-vermilion]" />
+                    )}
+                  </button>
+                )
+              })}
             </div>
-          </Field>
+            <div className="-mt-px h-px bg-[--color-ink]/10" />
 
-          {/* Calendar */}
-          <Field label="历法">
-            <div className="flex gap-3">
-              <Radio checked={form.dateType === 'solar'} onChange={() => update('dateType', 'solar')}>阳历</Radio>
-              <Radio checked={form.dateType === 'lunar'} onChange={() => update('dateType', 'lunar')}>阴历</Radio>
+            {/* Name */}
+            <div className="mt-5">
+              <Label>姓名 (选填)</Label>
+              <UnderlineInput
+                placeholder="输入姓名"
+                value={form.title}
+                onChange={(v) => update('title', v)}
+              />
             </div>
-          </Field>
 
-          {/* Date */}
-          <Field label="生日">
-            <div className="grid grid-cols-3 gap-2">
-              <input className="input" type="number" min="1900" max="2100" placeholder="年" value={form.year} onChange={(e) => update('year', e.target.value)} />
-              <input className="input" type="number" min="1" max="12" placeholder="月" value={form.month} onChange={(e) => update('month', e.target.value)} />
-              <input className="input" type="number" min="1" max="31" placeholder="日" value={form.day} onChange={(e) => update('day', e.target.value)} />
-            </div>
-            {form.dateType === 'lunar' && (
-              <label className="mt-2 inline-flex items-center gap-2 text-xs text-[--color-mist-500]">
-                <input type="checkbox" checked={form.isLeapMonth} onChange={(e) => update('isLeapMonth', e.target.checked)} />
-                闰月
-              </label>
-            )}
-          </Field>
-
-          {/* Time */}
-          <Field label="时辰">
-            <select
-              className="input"
-              value={typeof form.timeIndex === 'number' ? form.timeIndex : ''}
-              onChange={(e) => update('timeIndex', e.target.value === '' ? '' : Number(e.target.value))}
-              disabled={form.useTrueSolarTime}
-            >
-              <option value="">— 请选择 —</option>
-              {TIME_INDEX_LABELS.map((l, i) => (
-                <option key={i} value={i}>{l}</option>
-              ))}
-            </select>
-            <label className="mt-2 inline-flex items-center gap-2 text-xs text-[--color-mist-500]">
-              <input type="checkbox" checked={form.useTrueSolarTime} onChange={(e) => update('useTrueSolarTime', e.target.checked)} />
-              我知道精确时间（启用真太阳时）
-            </label>
-            {form.useTrueSolarTime && (
-              <div className="mt-2 grid grid-cols-2 gap-2">
-                <input className="input" type="number" min="0" max="23" placeholder="时" value={form.birthHour} onChange={(e) => update('birthHour', e.target.value)} />
-                <input className="input" type="number" min="0" max="59" placeholder="分" value={form.birthMinute} onChange={(e) => update('birthMinute', e.target.value)} />
+            {/* Gender */}
+            <div className="mt-5">
+              <Label>性别</Label>
+              <div className="mt-2 grid grid-cols-2 gap-3">
+                <GenderCard
+                  selected={form.gender === 'male'}
+                  onClick={() => update('gender', 'male')}
+                  label="男 (乾造)"
+                  symbol="♂"
+                />
+                <GenderCard
+                  selected={form.gender === 'female'}
+                  onClick={() => update('gender', 'female')}
+                  label="女 (坤造)"
+                  symbol="♀"
+                />
               </div>
-            )}
-          </Field>
+            </div>
+          </div>
+        </section>
 
-          {/* Birth place — PII */}
-          <Field label="出生地（可选，仅城市级）" hint="填写后将由服务端加密存储，前端不保存明文。">
-            <input
-              className="input"
-              placeholder="如：上海"
-              value={form.birthPlace}
-              onChange={(e) => update('birthPlace', e.target.value)}
-            />
-          </Field>
+        {/* Bottom section — calendar, date, time, location */}
+        <section className="flex-1 px-5 pt-6">
+          <div className="mx-auto max-w-3xl space-y-6">
+            {/* Calendar */}
+            <div>
+              <Label>历法</Label>
+              <div className="mt-2 flex gap-6">
+                <RadioPill
+                  selected={form.dateType === 'solar'}
+                  onClick={() => update('dateType', 'solar')}
+                  label="公历 (阳历)"
+                />
+                <RadioPill
+                  selected={form.dateType === 'lunar'}
+                  onClick={() => update('dateType', 'lunar')}
+                  label="农历 (阴历)"
+                />
+              </div>
+            </div>
 
-          {error && <p className="text-sm text-[--color-vermilion]">{error}</p>}
+            {/* Date */}
+            <div>
+              <Label>出生日期</Label>
+              <div className="mt-2 grid grid-cols-3 gap-3">
+                <DateSelect
+                  value={form.year}
+                  onChange={(v) => update('year', v)}
+                  suffix="年"
+                  min={1900}
+                  max={2100}
+                />
+                <DateSelect
+                  value={form.month}
+                  onChange={(v) => update('month', v)}
+                  suffix="月"
+                  min={1}
+                  max={12}
+                  pad
+                />
+                <DateSelect
+                  value={form.day}
+                  onChange={(v) => update('day', v)}
+                  suffix="日"
+                  min={1}
+                  max={31}
+                  pad
+                />
+              </div>
+            </div>
 
-          <div className="flex justify-end gap-2">
-            <button type="button" className="btn-secondary" onClick={() => navigate(-1)}>取消</button>
-            <button type="submit" className="btn-primary" disabled={busy}>
-              {busy ? <Loader2 size={16} className="animate-spin" /> : null}
+            {/* Time */}
+            <div>
+              <Label>出生时间 (可选)</Label>
+              <div className="relative mt-2">
+                <Clock
+                  size={16}
+                  className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-[--color-mist-400]"
+                />
+                <select
+                  value={typeof form.timeIndex === 'number' ? form.timeIndex : ''}
+                  onChange={(e) =>
+                    update('timeIndex', e.target.value === '' ? '' : Number(e.target.value))
+                  }
+                  className="w-full appearance-none border-0 border-b border-[--color-ink]/15 bg-transparent py-2 pl-9 pr-8 text-sm text-[--color-ink] focus:border-[--color-ink] focus:outline-none focus:ring-0"
+                >
+                  <option value="">请选择时辰</option>
+                  {TIME_LABELS.map((l, i) => (
+                    <option key={i} value={i}>{l}</option>
+                  ))}
+                </select>
+                <ChevronDown
+                  size={16}
+                  className="pointer-events-none absolute right-2 top-1/2 -translate-y-1/2 text-[--color-mist-400]"
+                />
+              </div>
+              <p className="mt-2 text-xs text-[--color-mist-400]">
+                精确的时间能提供更准确的命盘分析。
+              </p>
+            </div>
+
+            {/* Location */}
+            <div>
+              <Label>出生地点</Label>
+              <div className="relative mt-2">
+                <MapPin
+                  size={16}
+                  className="pointer-events-none absolute left-1 top-1/2 -translate-y-1/2 text-[--color-mist-400]"
+                />
+                <input
+                  type="text"
+                  placeholder="搜索城市或地区..."
+                  value={form.birthPlace}
+                  onChange={(e) => update('birthPlace', e.target.value)}
+                  className="w-full border-0 border-b border-[--color-ink]/15 bg-transparent py-2 pl-7 text-sm text-[--color-ink] placeholder:text-[--color-mist-400] focus:border-[--color-ink] focus:outline-none focus:ring-0"
+                />
+              </div>
+            </div>
+
+            {error && <p className="text-sm text-[--color-vermilion]">{error}</p>}
+          </div>
+        </section>
+
+        {/* CTA bar */}
+        <div className="sticky bottom-0 mt-8 border-t border-[--color-ink]/10 bg-[--color-paper] p-4">
+          <div className="mx-auto max-w-3xl">
+            <button
+              type="submit"
+              disabled={busy}
+              className="flex w-full items-center justify-center gap-2 rounded-md bg-[--color-vermilion] px-6 py-4 text-base font-medium text-white shadow-sm hover:bg-[--color-vermilion-soft] disabled:opacity-60"
+            >
+              {busy ? <Loader2 size={18} className="animate-spin" /> : <Sparkles size={18} />}
               开始排盘
             </button>
           </div>
-        </form>
-      </PageContainer>
-    </>
-  )
-}
-
-function Field({ label, hint, children }: { label: string; hint?: string; children: React.ReactNode }) {
-  return (
-    <div>
-      <label className="block text-sm font-medium text-[--color-ink]">{label}</label>
-      {hint && <p className="mt-0.5 text-xs text-[--color-mist-400]">{hint}</p>}
-      <div className="mt-1.5">{children}</div>
+        </div>
+      </form>
     </div>
   )
 }
 
-function Radio({ checked, onChange, children }: { checked: boolean; onChange: () => void; children: React.ReactNode }) {
+function Label({ children }: { children: React.ReactNode }) {
+  return <span className="block text-xs font-semibold text-[--color-ink]">{children}</span>
+}
+
+function UnderlineInput({
+  value,
+  onChange,
+  placeholder,
+}: {
+  value: string
+  onChange: (v: string) => void
+  placeholder?: string
+}) {
   return (
-    <label className={`flex cursor-pointer items-center gap-2 rounded-lg border px-3 py-2 text-sm ${checked ? 'border-[--color-ink] bg-[--color-mist-50]' : 'border-[--color-ink]/15'}`}>
-      <input type="radio" checked={checked} onChange={onChange} className="hidden" />
-      {children}
+    <input
+      type="text"
+      value={value}
+      onChange={(e) => onChange(e.target.value)}
+      placeholder={placeholder}
+      className="mt-2 w-full border-0 border-b border-[--color-ink]/15 bg-transparent py-2 text-sm text-[--color-ink] placeholder:text-[--color-mist-400] focus:border-[--color-ink] focus:outline-none focus:ring-0"
+    />
+  )
+}
+
+function GenderCard({
+  selected,
+  onClick,
+  label,
+  symbol,
+}: {
+  selected: boolean
+  onClick: () => void
+  label: string
+  symbol: string
+}) {
+  return (
+    <button
+      type="button"
+      onClick={onClick}
+      className={`flex flex-col items-center justify-center rounded-lg border-2 bg-white px-4 py-5 text-sm transition-colors ${
+        selected
+          ? 'border-[--color-ink] text-[--color-ink]'
+          : 'border-[--color-ink]/15 text-[--color-mist-500]'
+      }`}
+    >
+      <span className="text-2xl leading-none">{symbol}</span>
+      <span className="mt-2 text-sm">{label}</span>
+    </button>
+  )
+}
+
+function RadioPill({
+  selected,
+  onClick,
+  label,
+}: {
+  selected: boolean
+  onClick: () => void
+  label: string
+}) {
+  return (
+    <label className="flex cursor-pointer items-center gap-2 text-sm" onClick={onClick}>
+      <span
+        className={`flex h-4 w-4 items-center justify-center rounded-full border-2 ${
+          selected ? 'border-[--color-vermilion]' : 'border-[--color-ink]/25'
+        }`}
+      >
+        {selected && <span className="h-2 w-2 rounded-full bg-[--color-vermilion]" />}
+      </span>
+      <span className={selected ? 'text-[--color-ink]' : 'text-[--color-mist-500]'}>{label}</span>
     </label>
+  )
+}
+
+function DateSelect({
+  value,
+  onChange,
+  suffix,
+  min,
+  max,
+  pad,
+}: {
+  value: string
+  onChange: (v: string) => void
+  suffix: string
+  min: number
+  max: number
+  pad?: boolean
+}) {
+  const options: number[] = []
+  for (let i = min; i <= max; i++) options.push(i)
+  return (
+    <div className="relative flex items-center">
+      <div className="relative flex-1">
+        <select
+          value={value}
+          onChange={(e) => onChange(e.target.value)}
+          className="w-full appearance-none border-0 border-b border-[--color-ink]/15 bg-transparent py-2 pr-7 text-sm text-[--color-ink] focus:border-[--color-ink] focus:outline-none focus:ring-0"
+        >
+          {options.map((n) => (
+            <option key={n} value={String(n)}>
+              {pad ? String(n).padStart(2, '0') : n}
+            </option>
+          ))}
+        </select>
+        <ChevronDown
+          size={14}
+          className="pointer-events-none absolute right-1 top-1/2 -translate-y-1/2 text-[--color-mist-400]"
+        />
+      </div>
+      <span className="ml-2 text-sm text-[--color-mist-500]">{suffix}</span>
+    </div>
   )
 }
