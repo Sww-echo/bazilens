@@ -1,5 +1,6 @@
 import { useState } from 'react'
 import { useNavigate, useSearchParams } from 'react-router-dom'
+import { useTranslation } from 'react-i18next'
 import ReactMarkdown from 'react-markdown'
 import { Sparkles, RefreshCw, BatteryFull, Loader2 } from 'lucide-react'
 
@@ -10,11 +11,11 @@ import { rateReading } from '@/api/readings'
 import { UpgradeModal } from '@/components/UpgradeModal'
 
 const SCENES = [
-  { id: 'marriage', label: '婚姻' },
-  { id: 'career', label: '事业' },
-  { id: 'wealth', label: '财运' },
-  { id: 'health', label: '健康' },
-  { id: 'study', label: '学业' },
+  { id: 'marriage', labelKey: 'reading.sceneMarriage' },
+  { id: 'career', labelKey: 'reading.sceneCareer' },
+  { id: 'wealth', labelKey: 'reading.sceneWealth' },
+  { id: 'health', labelKey: 'reading.sceneHealth' },
+  { id: 'study', labelKey: 'reading.sceneStudy' },
 ] as const
 
 type Scene = typeof SCENES[number]['id']
@@ -34,6 +35,7 @@ const PLACEHOLDER_BULLETS = [
 ]
 
 export default function ReadingNewPage() {
+  const { t } = useTranslation()
   const [params] = useSearchParams()
   const navigate = useNavigate()
   const chartId = params.get('chart_id') ?? ''
@@ -73,9 +75,9 @@ export default function ReadingNewPage() {
   return (
     <div className="mx-auto w-full max-w-3xl px-5 py-6">
       <div>
-        <h1 className="serif text-3xl font-semibold leading-tight">命盘：我的本命盘</h1>
+        <h1 className="serif text-3xl font-semibold leading-tight">{t('reading.title', { name: '我的本命盘' })}</h1>
         <div className="mt-3 flex items-center justify-between">
-          <p className="text-sm text-[--color-mist-500]">AI 详细解读</p>
+          <p className="text-sm text-[--color-mist-500]">{t('reading.subtitle', 'AI 详细解读')}</p>
           <span className="inline-flex items-center gap-1.5 rounded-full bg-[--color-jade]/15 px-3 py-1 text-xs font-medium text-[--color-jade]">
             <BatteryFull size={12} />
             {tier === 'free' ? `Free ${Math.max(0, 3 - remaining)}/3` : `Plus ${Math.max(0, 30 - remaining)}/30`}
@@ -97,7 +99,7 @@ export default function ReadingNewPage() {
                   : 'border border-[--color-ink]/15 bg-white text-[--color-ink] hover:bg-[--color-mist-50]'
               }`}
             >
-              {s.label}
+              {t(s.labelKey)}
             </button>
           )
         })}
@@ -107,7 +109,7 @@ export default function ReadingNewPage() {
       <article className="mt-6 rounded-xl border border-[--color-ink]/10 bg-white p-6 shadow-sm">
         <div className="flex items-center gap-2">
           <Sparkles size={16} className="text-[--color-vermilion]" />
-          <h2 className="serif text-2xl font-semibold">总览</h2>
+          <h2 className="serif text-2xl font-semibold">{t('reading.overview', '总览')}</h2>
         </div>
 
         {showPlaceholder ? (
@@ -116,7 +118,7 @@ export default function ReadingNewPage() {
             disabled={!chartId}
             className="mt-5 flex w-full items-center justify-center gap-2 rounded-md bg-[--color-vermilion] px-4 py-3 text-sm font-medium text-white shadow-sm hover:bg-[--color-vermilion-soft] disabled:opacity-60"
           >
-            <Sparkles size={16} /> 开始解读
+            <Sparkles size={16} /> {t('reading.start', '开始解读')}
           </button>
         ) : (
           <>
@@ -184,7 +186,7 @@ export default function ReadingNewPage() {
         disabled={!chartId || isStreaming}
         className="mt-4 flex w-full items-center justify-center gap-2 rounded-md border border-[--color-ink]/15 bg-white px-6 py-3 text-sm font-medium text-[--color-ink] hover:bg-[--color-mist-50] disabled:opacity-60"
       >
-        <RefreshCw size={16} /> 重新生成
+        <RefreshCw size={16} /> {t('common.regenerate', '重新生成')}
       </button>
 
       <UpgradeModal

@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react'
 import { Link, useNavigate, useParams } from 'react-router-dom'
+import { useTranslation } from 'react-i18next'
 import { ArrowLeft, Share2, Sparkles, FileText } from 'lucide-react'
 
 import { getChart } from '@/api/charts'
@@ -24,6 +25,7 @@ const FALLBACK_PILLARS: Pillar[] = [
 const FALLBACK_FIVE: Record<string, number> = { 金: 42, 木: 15, 水: 12, 火: 18, 土: 13 }
 
 export default function ChartDetailPage() {
+  const { t } = useTranslation()
   const { id = '' } = useParams()
   const navigate = useNavigate()
   const [chart, setChart] = useState<Awaited<ReturnType<typeof getChart>>>(null)
@@ -60,7 +62,7 @@ export default function ChartDetailPage() {
             <ArrowLeft size={20} />
           </button>
           <h1 className="serif flex-1 text-center text-lg font-semibold">
-            {chart?.title || '我的本命盘'}
+            {chart?.title || t('chart.myChart', '我的本命盘')}
           </h1>
           <button
             type="button"
@@ -76,9 +78,9 @@ export default function ChartDetailPage() {
       <div className="bg-[--color-paper-2]/55">
         <div className="mx-auto grid max-w-3xl grid-cols-3 px-4 text-sm">
           {([
-            { v: 'bazi', label: '八字盘' },
-            { v: 'ziwei', label: '紫微盘' },
-            { v: 'compare', label: '合盘对比' },
+            { v: 'bazi', labelKey: 'chart.tabBazi' },
+            { v: 'ziwei', labelKey: 'chart.tabZiwei' },
+            { v: 'compare', labelKey: 'chart.tabCompare' },
           ] as const).map((opt) => {
             const active = tab === opt.v
             return (
@@ -89,7 +91,7 @@ export default function ChartDetailPage() {
                   active ? 'font-semibold text-[--color-vermilion]' : 'text-[--color-mist-500]'
                 }`}
               >
-                {opt.label}
+                {t(opt.labelKey)}
                 {active && (
                   <span className="absolute inset-x-6 -bottom-px h-0.5 rounded-full bg-[--color-vermilion]" />
                 )}
@@ -132,7 +134,7 @@ export default function ChartDetailPage() {
             onClick={() => navigate(`/reading/new?chart_id=${id}`)}
             className="flex w-full items-center justify-center gap-2 rounded-md bg-[--color-vermilion] px-6 py-4 text-base font-medium text-white shadow-sm hover:bg-[--color-vermilion-soft]"
           >
-            <Sparkles size={18} /> 开始 AI 解读
+            <Sparkles size={18} /> {t('chart.ctaAiReading', '开始 AI 解读')}
           </button>
           <Link
             to={`/upgrade?chart_id=${id}#pdf`}
@@ -147,6 +149,7 @@ export default function ChartDetailPage() {
 }
 
 function BaziPanel({ pillars, five }: { pillars: Pillar[]; five: Record<string, number> }) {
+  const { t } = useTranslation()
   return (
     <div className="rounded-xl border border-[--color-ink]/10 bg-white p-5 shadow-sm">
       {/* Four pillars */}
@@ -188,7 +191,7 @@ function BaziPanel({ pillars, five }: { pillars: Pillar[]; five: Record<string, 
       <div className="my-6 h-px bg-[--color-ink]/10" />
 
       {/* Five elements */}
-      <h2 className="serif text-xl font-semibold">五行力量分布 (Five Elements)</h2>
+      <h2 className="serif text-xl font-semibold">{t('chart.fiveElementsTitle', '五行力量分布 (Five Elements)')}</h2>
 
       <FiveDonut data={five} />
 

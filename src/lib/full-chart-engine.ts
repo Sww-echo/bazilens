@@ -1,6 +1,6 @@
 import { baziCalculator } from '@/utils/bazi/baziCalculator';
 import type { BaziChartResult } from '@/utils/bazi/baziTypes';
-import type { Person } from '@/composables/useFormState';
+import type { Person } from '@/utils/bazi/baziTypes';
 import { resolveZiweiTrueSolarBirth } from '@/lib/ziwei/true-solar-input';
 import type { ChartInput } from '@/types/chart';
 import type { AnalysisPayloadV1, ScopeType } from '@/types/analysis';
@@ -60,7 +60,6 @@ export function buildPersonFromInput(input: {
   }
 
   return {
-    name: '',
     gender: input.gender,
     year: Number(input.year),
     month: Number(input.month),

@@ -95,12 +95,13 @@ function buildVisibleStems(pillars: Pillars): string[] {
 }
 
 function buildVisibleStemSources(pillars: Pillars): VisibleStemSource[] {
-  return [
+  const sources: VisibleStemSource[] = [
     { pillar: 'year', stem: pillars.year.gan },
     { pillar: 'month', stem: pillars.month.gan },
     { pillar: 'day', stem: pillars.day.gan },
     { pillar: 'hour', stem: pillars.hour.gan }
-  ].filter(source => Boolean(source.stem))
+  ]
+  return sources.filter(source => Boolean(source.stem))
 }
 
 function buildHiddenStemValues(hiddenStems: HiddenStems): string[] {

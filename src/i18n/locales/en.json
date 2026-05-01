@@ -1,0 +1,126 @@
+{
+  "app": {
+    "name": "BaziLens",
+    "tagline": "Scholarly insights for the modern era."
+  },
+  "nav": {
+    "home": "Home",
+    "charts": "My Charts",
+    "readings": "Reading History",
+    "reports": "Reports",
+    "account": "Account"
+  },
+  "tab": {
+    "charts": "Charts",
+    "aiReading": "AI Reading",
+    "reports": "Reports",
+    "settings": "Settings",
+    "status": "Status",
+    "tickets": "Tickets",
+    "profile": "Profile"
+  },
+  "common": {
+    "loading": "Loading…",
+    "save": "Save",
+    "cancel": "Cancel",
+    "confirm": "Confirm",
+    "back": "Back",
+    "share": "Share",
+    "regenerate": "Regenerate",
+    "next": "Next",
+    "create": "Create"
+  },
+  "auth": {
+    "signIn": "Sign in",
+    "signUp": "Sign up",
+    "signOut": "Sign out",
+    "magicLink": "Sign in with magic link",
+    "google": "Continue with Google",
+    "apple": "Continue with Apple",
+    "sendMagicLink": "Send Magic Link",
+    "or": "OR"
+  },
+  "chart": {
+    "newTitle": "New Chart",
+    "myChart": "My Chart",
+    "tabBazi": "BaZi",
+    "tabZiwei": "Ziwei",
+    "tabCompare": "Compare",
+    "name": "Name (optional)",
+    "namePlaceholder": "Enter name",
+    "gender": "Gender",
+    "male": "Male (乾造)",
+    "female": "Female (坤造)",
+    "calendar": "Calendar",
+    "solar": "Solar (公历)",
+    "lunar": "Lunar (农历)",
+    "birthDate": "Date of Birth",
+    "birthTime": "Time of Birth (optional)",
+    "birthTimePlaceholder": "Select hour",
+    "birthTimeHint": "A precise time produces a more accurate chart.",
+    "useTrueSolar": "I know the exact time (enable true-solar correction)",
+    "birthPlace": "Place of Birth",
+    "birthPlacePlaceholder": "Search city or region...",
+    "ctaSubmit": "Generate Chart",
+    "ctaAiReading": "Start AI Reading",
+    "ctaPdf": "PDF $14.99",
+    "fiveElementsTitle": "Five Elements"
+  },
+  "reading": {
+    "title": "Chart: {{name}}",
+    "subtitle": "AI Deep Reading",
+    "sceneMarriage": "Marriage",
+    "sceneCareer": "Career",
+    "sceneWealth": "Wealth",
+    "sceneHealth": "Health",
+    "sceneStudy": "Study",
+    "overview": "Overview",
+    "start": "Start Reading",
+    "generating": "Generating detailed insights…"
+  },
+  "upgrade": {
+    "title": "Upgrade Plans",
+    "subtitle": "Unlock deeper scholarly insights and advanced Bazi chart analyses.",
+    "monthly": "Monthly",
+    "annual": "Annual",
+    "recommended": "Recommended",
+    "currentPlan": "Current Plan",
+    "upgradeToPlus": "Upgrade to Plus",
+    "upgradeToPro": "Upgrade to Pro",
+    "purchaseReport": "Purchase Report",
+    "noSubscriptionNeeded": "No Subscription Needed",
+    "oneTimeReport": "One-time Detailed PDF Report",
+    "faqTitle": "Frequently Asked Questions"
+  },
+  "account": {
+    "title": "Account",
+    "subtitle": "Manage your profile, preferences, and subscription.",
+    "subscription": "Subscription",
+    "currentPlan": "Current Plan",
+    "nextBillingDate": "Next Billing Date",
+    "manageSubscription": "Manage Subscription",
+    "quotaUsage": "Quota Usage",
+    "readings": "/ {{count}} readings",
+    "resetsOn": "Resets on {{date}}",
+    "privacyData": "Privacy & Data",
+    "exportData": "Export My Data",
+    "cookiePreferences": "Cookie Preferences",
+    "deleteAccount": "Delete Account",
+    "deleteWarning": "Permanently remove your account and all associated Bazi readings. This action cannot be undone."
+  },
+  "cookie": {
+    "intro": "We use cookies to deliver our services, analyze usage and improve your experience.",
+    "policy": "Privacy Policy",
+    "necessary": "Necessary",
+    "required": "Required",
+    "analytics": "Analytics",
+    "errors": "Error monitoring",
+    "accept_all": "Accept all",
+    "necessary_only": "Necessary only",
+    "customize": "Customize",
+    "save": "Save"
+  },
+  "disclaimer": {
+    "footer": "BaziLens is a traditional Chinese astrology study and reference tool offered for educational and entertainment purposes only. It does not constitute medical, legal, financial, investment, or psychological advice."
+  }
+}

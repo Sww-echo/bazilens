@@ -1,5 +1,6 @@
 import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
+import { useTranslation } from 'react-i18next'
 import { ArrowLeft, ChevronDown, Clock, MapPin, Sparkles, Loader2 } from 'lucide-react'
 
 import { useCharts } from '@/hooks/useCharts'
@@ -16,13 +17,14 @@ const TIME_LABELS = [
   '申时 (15:00-16:59)', '酉时 (17:00-18:59)', '戌时 (19:00-20:59)', '亥时 (21:00-22:59)',
 ]
 
-const VARIANTS: { v: 'bazi' | 'ziwei' | 'combined'; label: string }[] = [
-  { v: 'bazi', label: '八字' },
-  { v: 'ziwei', label: '紫微' },
-  { v: 'combined', label: '八字+紫微' },
+const VARIANTS: { v: 'bazi' | 'ziwei' | 'combined'; labelKey: string }[] = [
+  { v: 'bazi', labelKey: 'chart.tabBazi' },
+  { v: 'ziwei', labelKey: 'chart.tabZiwei' },
+  { v: 'combined', labelKey: 'chart.tabCompare' },
 ]
 
 export default function ChartNewPage() {
+  const { t } = useTranslation()
   const navigate = useNavigate()
   const { create } = useCharts()
   const [busy, setBusy] = useState(false)
@@ -82,7 +84,7 @@ export default function ChartNewPage() {
           >
             <ArrowLeft size={20} />
           </button>
-          <h1 className="serif flex-1 text-center text-lg font-semibold">创建新命盘</h1>
+          <h1 className="serif flex-1 text-center text-lg font-semibold">{t('chart.newTitle', '创建新命盘')}</h1>
           <span className="w-9" />
         </div>
       </header>
@@ -104,7 +106,7 @@ export default function ChartNewPage() {
                       active ? 'font-semibold text-[--color-vermilion]' : 'text-[--color-mist-500]'
                     }`}
                   >
-                    {opt.label}
+                    {t(opt.labelKey)}
                     {active && (
                       <span className="absolute inset-x-6 -bottom-px h-0.5 rounded-full bg-[--color-vermilion]" />
                     )}
@@ -116,9 +118,9 @@ export default function ChartNewPage() {
 
             {/* Name */}
             <div className="mt-5">
-              <Label>姓名 (选填)</Label>
+              <Label>{t('chart.name', '姓名 (选填)')}</Label>
               <UnderlineInput
-                placeholder="输入姓名"
+                placeholder={t('chart.namePlaceholder', '输入姓名')}
                 value={form.title}
                 onChange={(v) => update('title', v)}
               />
@@ -126,18 +128,18 @@ export default function ChartNewPage() {
 
             {/* Gender */}
             <div className="mt-5">
-              <Label>性别</Label>
+              <Label>{t('chart.gender', '性别')}</Label>
               <div className="mt-2 grid grid-cols-2 gap-3">
                 <GenderCard
                   selected={form.gender === 'male'}
                   onClick={() => update('gender', 'male')}
-                  label="男 (乾造)"
+                  label={t('chart.male', '男 (乾造)')}
                   symbol="♂"
                 />
                 <GenderCard
                   selected={form.gender === 'female'}
                   onClick={() => update('gender', 'female')}
-                  label="女 (坤造)"
+                  label={t('chart.female', '女 (坤造)')}
                   symbol="♀"
                 />
               </div>
@@ -150,24 +152,24 @@ export default function ChartNewPage() {
           <div className="mx-auto max-w-3xl space-y-6">
             {/* Calendar */}
             <div>
-              <Label>历法</Label>
+              <Label>{t('chart.calendar', '历法')}</Label>
               <div className="mt-2 flex gap-6">
                 <RadioPill
                   selected={form.dateType === 'solar'}
                   onClick={() => update('dateType', 'solar')}
-                  label="公历 (阳历)"
+                  label={t('chart.solar', '公历 (阳历)')}
                 />
                 <RadioPill
                   selected={form.dateType === 'lunar'}
                   onClick={() => update('dateType', 'lunar')}
-                  label="农历 (阴历)"
+                  label={t('chart.lunar', '农历 (阴历)')}
                 />
               </div>
             </div>
 
             {/* Date */}
             <div>
-              <Label>出生日期</Label>
+              <Label>{t('chart.birthDate', '出生日期')}</Label>
               <div className="mt-2 grid grid-cols-3 gap-3">
                 <DateSelect
                   value={form.year}
@@ -197,7 +199,7 @@ export default function ChartNewPage() {
 
             {/* Time */}
             <div>
-              <Label>出生时间 (可选)</Label>
+              <Label>{t('chart.birthTime', '出生时间 (可选)')}</Label>
               <div className="relative mt-2">
                 <Clock
                   size={16}
@@ -211,7 +213,7 @@ export default function ChartNewPage() {
                   disabled={form.useTrueSolarTime}
                   className="w-full appearance-none border-0 border-b border-[--color-ink]/15 bg-transparent py-2 pl-9 pr-8 text-sm text-[--color-ink] focus:border-[--color-ink] focus:outline-none focus:ring-0 disabled:opacity-60"
                 >
-                  <option value="">请选择时辰</option>
+                  <option value="">{t('chart.birthTimePlaceholder', '请选择时辰')}</option>
                   {TIME_LABELS.map((l, i) => (
                     <option key={i} value={i}>{l}</option>
                   ))}
@@ -222,7 +224,7 @@ export default function ChartNewPage() {
                 />
               </div>
               <p className="mt-2 text-xs text-[--color-mist-400]">
-                精确的时间能提供更准确的命盘分析。
+                {t('chart.birthTimeHint', '精确的时间能提供更准确的命盘分析。')}
               </p>
 
               <label className="mt-3 flex cursor-pointer items-center gap-2 text-xs text-[--color-mist-500]">
@@ -232,7 +234,7 @@ export default function ChartNewPage() {
                   onChange={(e) => update('useTrueSolarTime', e.target.checked)}
                   className="h-3.5 w-3.5 rounded border-[--color-ink]/30"
                 />
-                我知道精确时间（启用真太阳时）
+                {t('chart.useTrueSolar', '我知道精确时间（启用真太阳时）')}
               </label>
 
               {form.useTrueSolarTime && (
@@ -267,7 +269,7 @@ export default function ChartNewPage() {
 
             {/* Location */}
             <div>
-              <Label>出生地点</Label>
+              <Label>{t('chart.birthPlace', '出生地点')}</Label>
               <div className="relative mt-2">
                 <MapPin
                   size={16}
@@ -275,7 +277,7 @@ export default function ChartNewPage() {
                 />
                 <input
                   type="text"
-                  placeholder="搜索城市或地区..."
+                  placeholder={t('chart.birthPlacePlaceholder', '搜索城市或地区...')}
                   value={form.birthPlace}
                   onChange={(e) => update('birthPlace', e.target.value)}
                   className="w-full border-0 border-b border-[--color-ink]/15 bg-transparent py-2 pl-7 text-sm text-[--color-ink] placeholder:text-[--color-mist-400] focus:border-[--color-ink] focus:outline-none focus:ring-0"
@@ -296,7 +298,7 @@ export default function ChartNewPage() {
               className="flex w-full items-center justify-center gap-2 rounded-md bg-[--color-vermilion] px-6 py-4 text-base font-medium text-white shadow-sm hover:bg-[--color-vermilion-soft] disabled:opacity-60"
             >
               {busy ? <Loader2 size={18} className="animate-spin" /> : <Sparkles size={18} />}
-              开始排盘
+              {t('chart.ctaSubmit', '开始排盘')}
             </button>
           </div>
         </div>

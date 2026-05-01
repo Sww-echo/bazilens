@@ -1,4 +1,5 @@
 import { NavLink, useLocation } from 'react-router-dom'
+import { useTranslation } from 'react-i18next'
 import { Sparkles, BrainCircuit, FileText, Settings, LayoutGrid, Headphones, User } from 'lucide-react'
 
 type Tab = {
@@ -22,6 +23,7 @@ const ADMIN_TABS: Tab[] = [
 ]
 
 export function BottomTabs() {
+  const { t } = useTranslation()
   const { pathname } = useLocation()
   const isAdmin = pathname.startsWith('/admin')
   const tabs = isAdmin ? ADMIN_TABS : APP_TABS
@@ -48,7 +50,7 @@ export function BottomTabs() {
               {({ isActive }) => (
                 <>
                   <tab.icon size={20} strokeWidth={isActive ? 2 : 1.75} />
-                  <span>{tab.defaultLabel}</span>
+                  <span>{t(tab.labelKey, tab.defaultLabel)}</span>
                 </>
               )}
             </NavLink>

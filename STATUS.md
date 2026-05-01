@@ -3,7 +3,7 @@
 > Snapshot of what's been built vs. what's pending. Updated in-tree so any
 > future Claude / Cursor session can pick up without recovering context.
 
-Last updated: 2026-04-30
+Last updated: 2026-05-01
 
 ---
 
@@ -42,6 +42,19 @@ Last updated: 2026-04-30
   - `src/lib/iztro/` + `src/lib/full-chart-engine.ts`
   - `src/utils/{tarot,hexagram-data,ssgw-data}.ts`
   - `src/services/prompts/shared/question-analyzer.ts`
+
+### Frontend UI (`src/pages/` + `src/components/`)
+Mobile-first rebuild driven by `docs/ui/` mockups (commits `22d58aa`, `97a62ce`).
+- Layout system: route-aware `Layout` switches NavBar / BottomTabs / Footer; new `BottomTabs` component (app + admin variants); new `UpgradeModal`.
+- 11 pages built / rebuilt:
+  - Public: `LandingPage`, `DisclaimerPage`
+  - Auth: `SignInPage` (magic-link + Google + Apple)
+  - Chart: `ChartListPage`, `ChartNewPage` (BaZi/紫微/合 + true-solar option), `ChartDetailPage` (4-pillar grid + 五行 SVG donut, reads real `chart_data`)
+  - Reading: `ReadingListPage`, `ReadingNewPage` (scene pills + 总览 card + 5-star rating + UpgradeModal on quota exhaustion)
+  - Report: `ReportListPage`, `ReportDetailPage` (status / progress / ready / failed)
+  - Account: `AccountPage` (profile + subscription + quota + privacy/data + delete)
+  - Upgrade: `UpgradePage` (Monthly/Annual toggle, 3 tiers, one-time PDF, FAQ)
+  - Admin: `TicketsPage`, `StatusPage`
 
 ### Backend (`supabase/`)
 - `config.toml` (Auth + OAuth Google/Apple + Storage)
@@ -119,6 +132,13 @@ behalf of the user.
 
 These can be done in future sessions. Numbered in suggested execution order:
 
+### Frontend follow-ups (post-UI)
+22. i18n alignment — new pages contain inline EN/CN strings; consolidate into `react-i18next` keys.
+23. Browser smoke tests of golden paths (signup → chart → reading → report → upgrade).
+24. Replace SVG avatar placeholder in `AccountPage` with `auth.user.user_metadata.avatar_url`.
+25. Wire `/admin/status` to real Supabase health rather than hardcoded service rows.
+26. UI tests (React Testing Library) — currently 0 coverage.
+
 ### Bootstrap completion
 1. Run `npm install` and verify `npm run typecheck` passes (will likely surface
    strict-mode issues in placeholder code; address inline).
@@ -143,14 +163,14 @@ These can be done in future sessions. Numbered in suggested execution order:
    - download PDF from emailed signed URL
 
 ### Frontend (waits on UI design)
-9. Onboarding flow + cookie consent
-10. Magic Link / Google / Apple sign-in pages
-11. Chart input form (BaZi + Ziwei) wired to `src/api/charts.ts`
-12. Streaming reading UI (consume `streamReading` async generator)
-13. Subscription / upgrade flow (call `/checkout`)
-14. PDF purchase + progress page (Realtime subscription on `reports`)
-15. Account / Subscription / Privacy / Settings pages
-16. Admin tickets page
+~~9. Onboarding flow + cookie consent~~ — basic CookieConsent shipped; onboarding still spartan
+~~10. Magic Link / Google / Apple sign-in pages~~ — done (`SignInPage`)
+~~11. Chart input form (BaZi + Ziwei) wired to `src/api/charts.ts`~~ — done (`ChartNewPage`, `ChartListPage`, `ChartDetailPage`)
+~~12. Streaming reading UI (consume `streamReading` async generator)~~ — done (`ReadingNewPage`, `ReadingListPage`)
+~~13. Subscription / upgrade flow (call `/checkout`)~~ — done (`UpgradePage`, `UpgradeModal`)
+~~14. PDF purchase + progress page (Realtime subscription on `reports`)~~ — done (`ReportListPage`, `ReportDetailPage`)
+~~15. Account / Subscription / Privacy / Settings pages~~ — done (`AccountPage`)
+~~16. Admin tickets page~~ — done (`TicketsPage`, `StatusPage` stub)
 
 ### Operations
 17. Font subsetting CI script (`scripts/build-font-subset.sh`)
@@ -163,9 +183,7 @@ These can be done in future sessions. Numbered in suggested execution order:
 
 ## 🔒 Known constraints
 
-- Git commits not yet authored (git identity not set in this session). User
-  should run `git config user.name "..." && git config user.email "..."` and
-  then `git checkout -b feat/sprint-0-bootstrap && git add -A && git commit`.
+- ~~Git commits not yet authored (git identity not set in this session). User should run `git config user.name "..." && git config user.email "..."` and then `git checkout -b feat/sprint-0-bootstrap && git add -A && git commit`.~~ — git identity configured; commits authored on `main`.
 - `node_modules/` not installed — `npm install` will be needed before
   `npm run dev` / `npm run typecheck`.
 - Edge Function bundle size: `report-generate` pulls in `@react-pdf/renderer`
