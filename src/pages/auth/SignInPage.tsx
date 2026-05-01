@@ -1,10 +1,12 @@
 import { useState } from 'react'
 import { Link } from 'react-router-dom'
+import { Trans, useTranslation } from 'react-i18next'
 import { Mail, Smartphone, Loader2 } from 'lucide-react'
 
 import { signInWithMagicLink, signInWithGoogle, signInWithApple } from '@/api/auth'
 
 export default function SignInPage() {
+  const { t } = useTranslation()
   const [email, setEmail] = useState('')
   const [agreed, setAgreed] = useState(false)
   const [age16, setAge16] = useState(false)
@@ -18,7 +20,7 @@ export default function SignInPage() {
     e.preventDefault()
     setError(null)
     if (formInvalid) {
-      setError('Please enter your email and confirm both checkboxes.')
+      setError(t('signIn.errorRequired'))
       return
     }
     setBusy(true)
@@ -42,10 +44,10 @@ export default function SignInPage() {
               <DotGlyph />
             </div>
             <h1 className="serif mt-6 text-center text-3xl font-semibold leading-tight">
-              Sign in to<br />BaziLens
+              {t('signIn.title')}
             </h1>
             <p className="mt-3 text-center text-sm text-[--color-mist-500]">
-              Access your scholarly analytical tools.
+              {t('signIn.subtitle')}
             </p>
 
             <div className="mt-7 space-y-3">
@@ -55,7 +57,7 @@ export default function SignInPage() {
                 className="flex w-full items-center justify-center gap-3 rounded-lg border border-[--color-ink]/15 bg-white px-4 py-3 text-sm font-medium text-[--color-ink] hover:bg-[--color-mist-50]"
               >
                 <Mail size={18} strokeWidth={1.75} />
-                Continue with Google
+                {t('auth.google')}
               </button>
               <button
                 type="button"
@@ -63,31 +65,30 @@ export default function SignInPage() {
                 className="flex w-full items-center justify-center gap-3 rounded-lg border border-[--color-ink]/15 bg-white px-4 py-3 text-sm font-medium text-[--color-ink] hover:bg-[--color-mist-50]"
               >
                 <Smartphone size={18} strokeWidth={1.75} />
-                Continue with Apple
+                {t('auth.apple')}
               </button>
             </div>
 
             <div className="my-6 flex items-center gap-3 text-xs uppercase tracking-[0.18em] text-[--color-mist-400]">
               <span className="flex-1 border-t border-[--color-ink]/10" />
-              <span>Or Magic Link</span>
+              <span>{t('signIn.magicLinkDivider')}</span>
               <span className="flex-1 border-t border-[--color-ink]/10" />
             </div>
 
             {sent ? (
               <div className="rounded-lg bg-[--color-jade]/10 p-4 text-sm text-[--color-jade]">
-                Magic link sent to <span className="font-medium">{email}</span>. Check your inbox
-                within 10 minutes.
+                {t('signIn.magicLinkSent', { email })}
               </div>
             ) : (
               <form onSubmit={submitMagic} className="space-y-5">
                 <div>
                   <label htmlFor="email" className="block text-sm font-semibold text-[--color-ink]">
-                    Email Address
+                    {t('signIn.emailLabel')}
                   </label>
                   <input
                     id="email"
                     type="email"
-                    placeholder="scholar@example.com"
+                    placeholder={t('signIn.emailPlaceholder')}
                     value={email}
                     onChange={(e) => setEmail(e.target.value)}
                     disabled={busy}
@@ -100,17 +101,23 @@ export default function SignInPage() {
                     checked={agreed}
                     onChange={setAgreed}
                     label={
-                      <>
-                        I agree to the{' '}
-                        <Link to="/terms" className="underline">Terms of Service</Link> and{' '}
-                        <Link to="/privacy" className="underline">Privacy Policy</Link>.
-                      </>
+                      <Trans
+                        i18nKey="signIn.agreeTerms"
+                        components={{
+                          terms: <Link to="/terms" className="underline" />,
+                          privacy: <Link to="/privacy" className="underline" />,
+                        }}
+                        values={{
+                          terms: t('footer.terms'),
+                          privacy: t('footer.privacy'),
+                        }}
+                      />
                     }
                   />
                   <Check
                     checked={age16}
                     onChange={setAge16}
-                    label="I confirm I am 16 years of age or older."
+                    label={t('signIn.agreeAge')}
                   />
                 </div>
 
@@ -122,16 +129,16 @@ export default function SignInPage() {
                   className="flex w-full items-center justify-center gap-2 rounded-lg bg-[--color-ink] px-4 py-3.5 text-sm font-semibold text-white shadow-sm hover:bg-[--color-ink-soft] disabled:cursor-not-allowed disabled:bg-[--color-ink]/40"
                 >
                   {busy ? <Loader2 size={16} className="animate-spin" /> : null}
-                  Send Magic Link
+                  {t('auth.sendMagicLink')}
                 </button>
               </form>
             )}
           </div>
 
           <p className="mt-6 text-center text-sm text-[--color-mist-500]">
-            Need help?{' '}
+            {t('signIn.needHelp')}{' '}
             <a href="mailto:support@bazilens.app" className="font-semibold text-[--color-ink]">
-              Contact Support
+              {t('signIn.contactSupport')}
             </a>
           </p>
         </div>

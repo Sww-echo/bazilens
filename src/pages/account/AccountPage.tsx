@@ -1,5 +1,6 @@
 import { useState } from 'react'
 import { Link } from 'react-router-dom'
+import { useTranslation } from 'react-i18next'
 import { Award, Loader2, Download, SlidersHorizontal } from 'lucide-react'
 
 import { useAuthStore } from '@/stores/authStore'
@@ -9,6 +10,7 @@ import { useSubscription } from '@/hooks/useSubscription'
 import { openCustomerPortal } from '@/api/subscriptions'
 import { signOut } from '@/api/auth'
 import { supabase } from '@/api/client'
+import { useToast } from '@/components/Toast'
 
 const READING_LIMITS: Record<'free' | 'plus' | 'pro', number> = {
   free: 3,
@@ -17,6 +19,8 @@ const READING_LIMITS: Record<'free' | 'plus' | 'pro', number> = {
 }
 
 export default function AccountPage() {
+  const { t } = useTranslation()
+  const toast = useToast()
   const user = useAuthStore((s) => s.user)
   const tier = useSubscriptionStore((s) => s.tier)
   const periodEnd = useSubscriptionStore((s) => s.currentPeriodEnd)
@@ -32,13 +36,13 @@ export default function AccountPage() {
   if (!user) {
     return (
       <div className="mx-auto max-w-3xl px-5 py-10 text-center">
-        <h1 className="serif text-3xl font-semibold">Account</h1>
-        <p className="mt-3 text-sm text-[--color-mist-500]">请先登录。</p>
+        <h1 className="serif text-3xl font-semibold">{t('account.title')}</h1>
+        <p className="mt-3 text-sm text-[--color-mist-500]">{t('signIn.title')}</p>
         <Link
           to="/auth/sign-in"
           className="mt-6 inline-flex items-center justify-center gap-2 rounded-md bg-[--color-vermilion] px-6 py-3 text-sm font-medium text-white"
         >
-          登录
+          {t('auth.signIn')}
         </Link>
       </div>
     )
@@ -89,7 +93,7 @@ export default function AccountPage() {
       const j = await r.json()
       if (!r.ok) throw new Error(j.error ?? `http_${r.status}`)
       await signOut()
-      alert('账号注销已安排，30 天内可登录恢复。')
+      toast.push('success', '账号注销已安排，30 天内可登录恢复。')
       window.location.href = '/'
     } catch (e) {
       setError(e instanceof Error ? e.message : String(e))
@@ -101,16 +105,17 @@ export default function AccountPage() {
   return (
     <div className="bg-[#EEF1F6]">
       <div className="mx-auto max-w-3xl px-5 pb-10 pt-8">
-        <h1 className="serif text-4xl font-semibold tracking-tight">Account</h1>
+        <h1 className="serif text-4xl font-semibold tracking-tight">{t('account.title')}</h1>
         <p className="mt-2 text-sm text-[--color-mist-500]">
-          Manage your profile, preferences, and subscription.
+          {t('account.subtitle')}
         </p>
 
         {/* Profile */}
         <section className="mt-8 flex items-center gap-5">
-          <div className="flex h-16 w-16 items-center justify-center overflow-hidden rounded-full bg-[--color-mist-200]">
-            <ProfileAvatar />
-          </div>
+          <Avatar
+            src={(user.user_metadata?.avatar_url as string | undefined) ?? null}
+            name={displayName(user.email)}
+          />
           <div>
             <h2 className="serif text-2xl font-semibold">{displayName(user.email)}</h2>
             {tier !== 'free' && (
@@ -127,19 +132,19 @@ export default function AccountPage() {
         {/* Subscription card */}
         <section className="mt-6 rounded-xl border border-[--color-ink]/10 bg-white p-6">
           <div className="flex items-start justify-between">
-            <h3 className="serif text-2xl font-semibold">Subscription</h3>
+            <h3 className="serif text-2xl font-semibold">{t('account.subscription')}</h3>
             <Award size={18} className="text-[--color-mist-400]" />
           </div>
 
           <p className="mt-4 text-xs font-semibold uppercase tracking-wider text-[--color-mist-500]">
-            Current Plan
+            {t('account.currentPlan')}
           </p>
           <p className="mt-1 text-base font-semibold text-[--color-ink]">
             BaziLens {tier === 'free' ? 'Free' : tier === 'plus' ? 'Plus' : 'Pro'}
           </p>
 
           <p className="mt-4 text-xs font-semibold uppercase tracking-wider text-[--color-mist-500]">
-            Next Billing Date
+            {t('account.nextBillingDate')}
           </p>
           <p className="mt-1 text-base text-[--color-ink]">
             {periodEnd
@@ -155,14 +160,14 @@ export default function AccountPage() {
                 className="flex w-full items-center justify-center gap-2 rounded-md border border-[--color-ink]/15 bg-white px-4 py-3 text-sm font-medium text-[--color-ink] hover:bg-[--color-mist-50] disabled:opacity-60"
               >
                 {busy ? <Loader2 size={16} className="animate-spin" /> : null}
-                Manage Subscription
+                {t('account.manageSubscription')}
               </button>
             ) : (
               <Link
                 to="/upgrade"
                 className="flex w-full items-center justify-center gap-2 rounded-md bg-[--color-vermilion] px-4 py-3 text-sm font-medium text-white hover:bg-[--color-vermilion-soft]"
               >
-                Upgrade to Plus / Pro
+                {t('upgrade.upgradeToPlus')}
               </Link>
             )}
           </div>
@@ -171,13 +176,13 @@ export default function AccountPage() {
         {/* Quota card */}
         <section className="mt-6 rounded-xl border border-[--color-ink]/10 bg-white p-6">
           <div className="flex items-start justify-between">
-            <h3 className="serif text-2xl font-semibold">Quota Usage</h3>
+            <h3 className="serif text-2xl font-semibold">{t('account.quotaUsage')}</h3>
             <RingIcon />
           </div>
 
           <div className="mt-5 flex items-baseline gap-3">
             <span className="serif text-4xl font-semibold">{used}</span>
-            <span className="text-sm text-[--color-mist-500]">/ {limit} readings</span>
+            <span className="text-sm text-[--color-mist-500]">{t('account.readings', { count: limit })}</span>
           </div>
 
           <div className="mt-3 h-1.5 w-full overflow-hidden rounded-full bg-[--color-ink]/8">
@@ -188,22 +193,22 @@ export default function AccountPage() {
           </div>
 
           <p className="mt-3 text-sm italic text-[--color-mist-500]">
-            Resets on {nextResetLabel(periodEnd)}
+            {t('account.resetsOn', { date: nextResetLabel(periodEnd) })}
           </p>
         </section>
 
         {/* Privacy & Data */}
-        <h3 className="serif mt-8 text-2xl font-semibold">Privacy &amp; Data</h3>
+        <h3 className="serif mt-8 text-2xl font-semibold">{t('account.privacyData')}</h3>
         <div className="mt-3 overflow-hidden rounded-xl border border-[--color-ink]/10 bg-white">
           <ListRow
-            label="Export My Data"
+            label={t('account.exportData')}
             icon={<Download size={18} className="text-[--color-mist-500]" />}
             onClick={handleExportData}
             disabled={busy}
           />
           <div className="h-px bg-[--color-ink]/8" />
           <ListRow
-            label="Cookie Preferences"
+            label={t('account.cookiePreferences')}
             icon={<SlidersHorizontal size={18} className="text-[--color-mist-500]" />}
             disabled={busy}
           />
@@ -216,10 +221,10 @@ export default function AccountPage() {
           disabled={busy}
           className="mt-6 flex w-full items-center justify-center gap-2 rounded-md bg-[--color-vermilion] px-6 py-4 text-sm font-bold uppercase tracking-wider text-white hover:bg-[--color-vermilion-soft] disabled:opacity-60"
         >
-          Delete Account
+          {t('account.deleteAccount')}
         </button>
         <p className="mx-auto mt-3 max-w-sm text-center text-xs leading-relaxed text-[--color-mist-500]">
-          Permanently remove your account and all associated Bazi readings. This action cannot be undone.
+          {t('account.deleteWarning')}
         </p>
 
         {error && <p className="mt-4 text-center text-sm text-[--color-vermilion]">{error}</p>}
@@ -253,6 +258,32 @@ function ListRow({
       <span className="font-semibold">{label}</span>
       {icon}
     </button>
+  )
+}
+
+function Avatar({ src, name }: { src: string | null; name: string }) {
+  const [errored, setErrored] = useState(false)
+  const initials = name
+    .split(/\s+/)
+    .map((p) => p.charAt(0))
+    .join('')
+    .slice(0, 2)
+    .toUpperCase()
+
+  if (src && !errored) {
+    return (
+      <img
+        src={src}
+        alt=""
+        onError={() => setErrored(true)}
+        className="h-16 w-16 flex-none rounded-full object-cover"
+      />
+    )
+  }
+  return (
+    <div className="flex h-16 w-16 flex-none items-center justify-center rounded-full bg-[--color-mist-200] text-lg font-semibold text-[--color-ink]">
+      {initials || <ProfileAvatar />}
+    </div>
   )
 }
 

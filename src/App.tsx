@@ -2,9 +2,12 @@ import { lazy, Suspense, useEffect } from 'react'
 import { Navigate, Route, Routes } from 'react-router-dom'
 
 import { Layout } from '@/components/Layout'
+import { ToastProvider } from '@/components/Toast'
+import { ErrorBoundary } from '@/components/ErrorBoundary'
 import { useAuthStore } from '@/stores/authStore'
 import { useConsentStore } from '@/stores/consentStore'
 import { supabase } from '@/api/client'
+import { configureObservability } from '@/lib/observability'
 
 const LandingPage         = lazy(() => import('@/pages/public/LandingPage'))
 const PrivacyPolicyPage   = lazy(() => import('@/pages/public/PrivacyPolicyPage'))
@@ -27,6 +30,8 @@ const AdminStatusPage     = lazy(() => import('@/pages/admin/StatusPage'))
 export default function App() {
   const setUser = useAuthStore((s) => s.setUser)
   const restoreConsent = useConsentStore((s) => s.restore)
+  const consent = useConsentStore((s) => s.consent)
+  const consentHydrated = useConsentStore((s) => s.hydrated)
 
   useEffect(() => {
     restoreConsent()
@@ -46,31 +51,40 @@ export default function App() {
     }
   }, [restoreConsent, setUser])
 
+  useEffect(() => {
+    if (!consentHydrated) return
+    configureObservability(consent)
+  }, [consent, consentHydrated])
+
   return (
-    <Suspense fallback={<RouteFallback />}>
-      <Routes>
-        <Route element={<Layout />}>
-          <Route path="/" element={<LandingPage />} />
-          <Route path="/privacy" element={<PrivacyPolicyPage />} />
-          <Route path="/terms" element={<TermsPage />} />
-          <Route path="/disclaimer" element={<DisclaimerPage />} />
-          <Route path="/auth/sign-in" element={<SignInPage />} />
-          <Route path="/auth/callback" element={<AuthCallbackPage />} />
-          <Route path="/charts" element={<ChartListPage />} />
-          <Route path="/chart/new" element={<ChartNewPage />} />
-          <Route path="/chart/:id" element={<ChartDetailPage />} />
-          <Route path="/reading/new" element={<ReadingNewPage />} />
-          <Route path="/readings" element={<ReadingListPage />} />
-          <Route path="/reports" element={<ReportListPage />} />
-          <Route path="/report/:id" element={<ReportDetailPage />} />
-          <Route path="/account" element={<AccountPage />} />
-          <Route path="/upgrade" element={<UpgradePage />} />
-          <Route path="/admin/tickets" element={<AdminTicketsPage />} />
-          <Route path="/admin/status" element={<AdminStatusPage />} />
-          <Route path="*" element={<Navigate to="/" replace />} />
-        </Route>
-      </Routes>
-    </Suspense>
+    <ErrorBoundary>
+      <ToastProvider>
+        <Suspense fallback={<RouteFallback />}>
+          <Routes>
+            <Route element={<Layout />}>
+              <Route path="/" element={<LandingPage />} />
+              <Route path="/privacy" element={<PrivacyPolicyPage />} />
+              <Route path="/terms" element={<TermsPage />} />
+              <Route path="/disclaimer" element={<DisclaimerPage />} />
+              <Route path="/auth/sign-in" element={<SignInPage />} />
+              <Route path="/auth/callback" element={<AuthCallbackPage />} />
+              <Route path="/charts" element={<ChartListPage />} />
+              <Route path="/chart/new" element={<ChartNewPage />} />
+              <Route path="/chart/:id" element={<ChartDetailPage />} />
+              <Route path="/reading/new" element={<ReadingNewPage />} />
+              <Route path="/readings" element={<ReadingListPage />} />
+              <Route path="/reports" element={<ReportListPage />} />
+              <Route path="/report/:id" element={<ReportDetailPage />} />
+              <Route path="/account" element={<AccountPage />} />
+              <Route path="/upgrade" element={<UpgradePage />} />
+              <Route path="/admin/tickets" element={<AdminTicketsPage />} />
+              <Route path="/admin/status" element={<AdminStatusPage />} />
+              <Route path="*" element={<Navigate to="/" replace />} />
+            </Route>
+          </Routes>
+        </Suspense>
+      </ToastProvider>
+    </ErrorBoundary>
   )
 }
 

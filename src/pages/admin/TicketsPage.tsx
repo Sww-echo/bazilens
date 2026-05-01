@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react'
+import { useTranslation } from 'react-i18next'
 import { Menu, Search, Star, ChevronDown } from 'lucide-react'
 
 import { listMyTickets, type TicketRow, type TicketStatus } from '@/api/tickets'
@@ -72,6 +73,7 @@ const FALLBACK: Array<TicketRow & { user_name: string; user_initials: string; re
 ]
 
 export default function AdminTicketsPage() {
+  const { t } = useTranslation()
   const [tickets, setTickets] = useState<typeof FALLBACK>(FALLBACK)
   const [search, setSearch] = useState('')
   const [statusFilter, setStatusFilter] = useState<'all' | TicketStatus>('all')
@@ -124,21 +126,20 @@ export default function AdminTicketsPage() {
           <span className="w-9" />
         </div>
 
-        <h1 className="serif text-4xl font-semibold tracking-tight">Ticket Queue</h1>
+        <h1 className="serif text-4xl font-semibold tracking-tight">{t('tickets.title')}</h1>
         <p className="mt-3 text-sm leading-relaxed text-[--color-mist-500]">
-          Manage and prioritize user inquiries regarding Bazi chart interpretations, technical issues,
-          and account status.
+          {t('tickets.subtitle')}
         </p>
 
         {/* Search */}
         <div className="mt-7">
-          <label className="block text-xs font-semibold text-[--color-ink]">Search Subject or User</label>
+          <label className="block text-xs font-semibold text-[--color-ink]">{t('tickets.search')}</label>
           <div className="relative mt-2">
             <Search size={16} className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-[--color-mist-400]" />
             <input
               value={search}
               onChange={(e) => setSearch(e.target.value)}
-              placeholder="Search..."
+              placeholder={t('tickets.searchPlaceholder')}
               className="w-full rounded-md border border-[--color-ink]/12 bg-white py-2.5 pl-9 pr-3 text-sm placeholder:text-[--color-mist-400] focus:border-[--color-ink]/40 focus:outline-none focus:ring-2 focus:ring-[--color-ink]/10"
             />
           </div>
@@ -147,36 +148,36 @@ export default function AdminTicketsPage() {
         {/* Filters */}
         <div className="mt-4 grid grid-cols-2 gap-3">
           <FilterSelect
-            label="Status"
+            label={t('tickets.status')}
             value={statusFilter}
             onChange={(v) => setStatusFilter(v as 'all' | TicketStatus)}
             options={[
-              { value: 'all', label: 'All Statuses' },
-              { value: 'open', label: 'Open' },
-              { value: 'in_progress', label: 'In Progress' },
-              { value: 'replied', label: 'Replied' },
-              { value: 'closed', label: 'Resolved' },
+              { value: 'all', label: t('tickets.allStatuses') },
+              { value: 'open', label: t('tickets.open') },
+              { value: 'in_progress', label: t('tickets.inProgress') },
+              { value: 'replied', label: t('tickets.replied') },
+              { value: 'closed', label: t('tickets.resolved') },
             ]}
           />
           <FilterSelect
-            label="Category"
+            label={t('tickets.category')}
             value={categoryFilter}
             onChange={setCategoryFilter}
             options={[
-              { value: 'all', label: 'All Categories' },
-              { value: 'reading_inaccurate', label: 'Chart Interpretation' },
-              { value: 'pdf_failed', label: 'Technical Issue' },
-              { value: 'payment_issue', label: 'Billing' },
+              { value: 'all', label: t('tickets.allCategories') },
+              { value: 'reading_inaccurate', label: t('tickets.categoryChart') },
+              { value: 'pdf_failed', label: t('tickets.categoryTechnical') },
+              { value: 'payment_issue', label: t('tickets.categoryBilling') },
             ]}
           />
         </div>
         <div className="mt-3">
           <FilterSelect
-            label="Priority"
+            label={t('tickets.priority')}
             value={priorityFilter}
             onChange={setPriorityFilter}
             options={[
-              { value: 'all', label: 'All Priorities' },
+              { value: 'all', label: t('tickets.allPriorities') },
               { value: '5', label: 'P5 — Urgent' },
               { value: '4', label: 'P4 — High' },
               { value: '3', label: 'P3 — Medium' },

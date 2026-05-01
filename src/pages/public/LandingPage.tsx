@@ -1,22 +1,23 @@
 import { Link } from 'react-router-dom'
+import { useTranslation } from 'react-i18next'
 import { ArrowRight, FileText, BookOpen, Sparkles } from 'lucide-react'
 
 export default function LandingPage() {
+  const { t } = useTranslation()
   return (
     <div className="mx-auto max-w-3xl px-6 pb-12 pt-10">
       {/* Hero */}
       <section className="text-center">
-        <h1 className="serif text-4xl font-semibold leading-tight tracking-tight">BaziLens</h1>
-        <p className="serif mt-1 text-2xl text-[--color-ink]">读懂你的八字</p>
+        <h1 className="serif text-4xl font-semibold leading-tight tracking-tight">{t('landing.wordmark')}</h1>
+        <p className="serif mt-1 text-2xl text-[--color-ink]">{t('landing.subtitle')}</p>
         <p className="mx-auto mt-5 max-w-md text-sm leading-relaxed text-[--color-mist-500]">
-          Scholarly insights for the modern era. Decode the ancient algorithms of your life
-          with precision and elegance.
+          {t('landing.blurb')}
         </p>
         <Link
           to="/chart/new"
           className="mt-7 inline-flex w-full items-center justify-center gap-2 rounded-md bg-[--color-vermilion] px-6 py-3.5 text-sm font-medium text-white shadow-sm hover:bg-[--color-vermilion-soft]"
         >
-          立即免费体验 <ArrowRight size={16} />
+          {t('landing.ctaTry')} <ArrowRight size={16} />
         </Link>
       </section>
 
@@ -47,24 +48,24 @@ export default function LandingPage() {
 
       {/* Modern Study */}
       <section className="mt-10">
-        <h2 className="serif text-center text-2xl">The Modern Study</h2>
+        <h2 className="serif text-center text-2xl">{t('landing.modernStudy')}</h2>
         <div className="mx-auto mt-2 h-px w-12 bg-[--color-mist-300]" />
 
         <div className="mt-6 space-y-4">
           <FeatureCard
             icon={<BookOpen size={18} />}
-            title="Classical Algorithms"
-            body="Rooted in authentic traditional texts. Our engine accurately calculates the Four Pillars with rigorous scholarly precision, avoiding superficial interpretations."
+            title={t('landing.feat1Title')}
+            body={t('landing.feat1Body')}
           />
           <FeatureCard
             icon={<Sparkles size={18} />}
-            title="AI Deep Reading"
-            body="Leveraging advanced natural language processing to synthesize complex pillar interactions, providing nuanced, readable insights tailored to your specific chart."
+            title={t('landing.feat2Title')}
+            body={t('landing.feat2Body')}
           />
           <FeatureCard
             icon={<FileText size={18} />}
-            title="PDF Reports"
-            body="Generate beautifully formatted, editorial-quality PDF reports. Perfect for archival study or professional consultation, designed to look like a printed manuscript."
+            title={t('landing.feat3Title')}
+            body={t('landing.feat3Body')}
           />
         </div>
       </section>

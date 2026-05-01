@@ -1,23 +1,19 @@
 import { useState } from 'react'
+import { useTranslation } from 'react-i18next'
 import { Loader2, Check, FileText } from 'lucide-react'
 
 import { startSubscriptionCheckout, type CheckoutLookupKey } from '@/api/subscriptions'
 
-const FAQS = [
-  {
-    q: 'What is the refund policy?',
-    a: 'We offer a 7-day scholarly review period. If the insights do not meet your expectations, a full refund will be provided upon request.',
-  },
-  {
-    q: 'How do I cancel my subscription?',
-    a: 'Cancellations can be managed directly through your account settings at any time. Your access will continue until the end of the current billing cycle.',
-  },
-]
-
 export default function UpgradePage() {
+  const { t } = useTranslation()
   const [period, setPeriod] = useState<'monthly' | 'annual'>('monthly')
   const [busyTier, setBusyTier] = useState<string | null>(null)
   const [error, setError] = useState<string | null>(null)
+
+  const FAQS = [
+    { q: t('faq.refundQ', 'What is the refund policy?'), a: t('faq.refundA', 'We offer a 7-day scholarly review period. If the insights do not meet your expectations, a full refund will be provided upon request.') },
+    { q: t('faq.cancelQ', 'How do I cancel my subscription?'), a: t('faq.cancelA', 'Cancellations can be managed directly through your account settings at any time. Your access will continue until the end of the current billing cycle.') },
+  ]
 
   async function handleCheckout(tier: 'plus' | 'pro') {
     setBusyTier(tier)
@@ -39,9 +35,9 @@ export default function UpgradePage() {
   return (
     <div className="mx-auto max-w-3xl px-5 pb-12 pt-8">
       <div className="text-center">
-        <h1 className="serif text-4xl font-semibold leading-tight tracking-tight">Upgrade Plans</h1>
+        <h1 className="serif text-4xl font-semibold leading-tight tracking-tight">{t('upgrade.title')}</h1>
         <p className="mx-auto mt-3 max-w-md text-sm text-[--color-mist-500]">
-          Unlock deeper scholarly insights and advanced Bazi chart analyses.
+          {t('upgrade.subtitle')}
         </p>
       </div>
 
@@ -54,7 +50,7 @@ export default function UpgradePage() {
               !isAnnual ? 'bg-[--color-ink] text-white shadow-sm' : 'text-[--color-mist-500]'
             }`}
           >
-            Monthly
+            {t('upgrade.monthly')}
           </button>
           <button
             onClick={() => setPeriod('annual')}
@@ -62,7 +58,7 @@ export default function UpgradePage() {
               isAnnual ? 'bg-[--color-ink] text-white shadow-sm' : 'text-[--color-mist-500]'
             }`}
           >
-            Annual
+            {t('upgrade.annual')}
           </button>
         </div>
       </div>
@@ -70,21 +66,22 @@ export default function UpgradePage() {
       {/* Tier cards */}
       <div className="mt-8 space-y-5">
         <TierCard
-          name="Free"
+          name={t('upgrade.free')}
           price={0}
-          period={isAnnual ? '/yr' : '/mo'}
-          perks={['Basic Bazi Chart Generation', 'Daily Element Overview']}
-          cta={{ label: 'Current Plan', kind: 'ghost', disabled: true }}
+          period={isAnnual ? t('upgrade.perYear') : t('upgrade.perMonth')}
+          perks={[t('upgrade.freePerk1'), t('upgrade.freePerk2')]}
+          cta={{ label: t('upgrade.currentPlan'), kind: 'ghost', disabled: true }}
         />
 
         <TierCard
-          name="Plus"
+          name={t('upgrade.plus')}
           price={isAnnual ? 49.99 : 4.99}
-          period={isAnnual ? '/yr' : '/mo'}
-          perks={['Advanced Pillar Interactions', 'Monthly Forecasts', 'Save up to 10 Charts']}
+          period={isAnnual ? t('upgrade.perYear') : t('upgrade.perMonth')}
+          perks={[t('upgrade.plusPerk1'), t('upgrade.plusPerk2'), t('upgrade.plusPerk3')]}
           highlight
+          recommendedLabel={t('upgrade.recommended')}
           cta={{
-            label: busyTier === 'plus' ? 'Loading…' : 'Upgrade to Plus',
+            label: busyTier === 'plus' ? t('upgrade.loading') : t('upgrade.upgradeToPlus'),
             kind: 'primary',
             disabled: busyTier === 'plus',
             onClick: () => handleCheckout('plus'),
@@ -92,12 +89,12 @@ export default function UpgradePage() {
         />
 
         <TierCard
-          name="Pro"
+          name={t('upgrade.pro')}
           price={isAnnual ? 99.99 : 9.99}
-          period={isAnnual ? '/yr' : '/mo'}
-          perks={['Everything in Plus', 'Unlimited Saved Charts', 'AI Reading Integration']}
+          period={isAnnual ? t('upgrade.perYear') : t('upgrade.perMonth')}
+          perks={[t('upgrade.proPerk1'), t('upgrade.proPerk2'), t('upgrade.proPerk3')]}
           cta={{
-            label: busyTier === 'pro' ? 'Loading…' : 'Upgrade to Pro',
+            label: busyTier === 'pro' ? t('upgrade.loading') : t('upgrade.upgradeToPro'),
             kind: 'ghost',
             disabled: busyTier === 'pro',
             onClick: () => handleCheckout('pro'),
@@ -110,27 +107,27 @@ export default function UpgradePage() {
         <div className="flex items-start gap-3">
           <FileText size={22} className="mt-1.5 text-[--color-ink]" />
           <h2 className="serif text-2xl font-semibold leading-tight">
-            One-time<br />Detailed PDF Report
+            {t('upgrade.oneTimeReport')}
           </h2>
         </div>
         <p className="mt-3 text-sm text-[--color-mist-500]">
-          A comprehensive, beautifully typeset 20-page document analyzing your lifetime pillars.
+          {t('upgrade.oneTimeReportBody')}
         </p>
         <p className="mt-4 text-[11px] font-semibold uppercase tracking-wider text-[--color-mist-500]">
-          No Subscription Needed
+          {t('upgrade.noSubscriptionNeeded')}
         </p>
         <p className="mt-1 text-right">
           <span className="serif text-3xl font-semibold">$14.99</span>
         </p>
         <button className="mt-4 flex w-full items-center justify-center gap-2 rounded-md border border-[--color-ink]/15 bg-white px-4 py-3 text-sm font-semibold uppercase tracking-wider text-[--color-ink] hover:bg-[--color-mist-50]">
-          Purchase Report
+          {t('upgrade.purchaseReport')}
         </button>
       </section>
 
       {/* FAQ */}
       <section className="mt-12">
         <h2 className="serif text-center text-3xl font-semibold leading-tight">
-          Frequently Asked<br />Questions
+          {t('upgrade.faqTitle')}
         </h2>
         <div className="mx-auto mt-4 h-px w-12 bg-[--color-mist-300]" />
         <div className="mt-6 space-y-6">
@@ -156,6 +153,7 @@ function TierCard({
   period,
   perks,
   highlight,
+  recommendedLabel,
   cta,
 }: {
   name: string
@@ -163,6 +161,7 @@ function TierCard({
   period: string
   perks: string[]
   highlight?: boolean
+  recommendedLabel?: string
   cta: Cta
 }) {
   return (
@@ -171,9 +170,9 @@ function TierCard({
         highlight ? 'border-[--color-ink]' : 'border-[--color-ink]/10'
       }`}
     >
-      {highlight && (
+      {highlight && recommendedLabel && (
         <span className="absolute -top-3 left-1/2 -translate-x-1/2 rounded bg-[--color-ink] px-4 py-1 text-[10px] font-bold uppercase tracking-[0.2em] text-white">
-          Recommended
+          {recommendedLabel}
         </span>
       )}
       <h3 className="serif text-2xl font-semibold">{name}</h3>
