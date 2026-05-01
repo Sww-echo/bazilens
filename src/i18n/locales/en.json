@@ -206,6 +206,25 @@
     "reload": "Reload Page",
     "goHome": "Go Home"
   },
+  "onboarding": {
+    "skip": "Skip",
+    "next": "Next",
+    "back": "Back",
+    "step": "Step {{n}} of {{total}}",
+    "welcomeTitle": "Welcome to BaziLens",
+    "welcomeBody": "Pick your language and consent preferences. You can change these any time in Settings.",
+    "languageLabel": "Language",
+    "consentLabel": "Cookies",
+    "consentMinimal": "Necessary only",
+    "consentFull": "Necessary + analytics",
+    "quickTitle": "Your first chart",
+    "quickBody": "Just a few details to compute your Four Pillars. You can refine birth place and exact time later.",
+    "sampleTitle": "Here's a glimpse",
+    "sampleBody": "Below is what an AI reading looks like for your chart. Tap Start Reading to generate the real one.",
+    "sampleStart": "Start Reading",
+    "finishGoCharts": "Finish",
+    "samplePreview": "Your day master is supported by month branch, suggesting a stable career foundation. Recent annual stems indicate gradual upward momentum, especially in autumn months. Watch for opportunities through senior mentors."
+  },
   "disclaimer": {
     "footer": "BaziLens is a traditional Chinese astrology study and reference tool offered for educational and entertainment purposes only. It does not constitute medical, legal, financial, investment, or psychological advice."
   }

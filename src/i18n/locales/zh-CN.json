@@ -206,6 +206,25 @@
     "reload": "重新加载",
     "goHome": "返回首页"
   },
+  "onboarding": {
+    "skip": "跳过",
+    "next": "下一步",
+    "back": "上一步",
+    "step": "第 {{n}} / {{total}} 步",
+    "welcomeTitle": "欢迎来到 BaziLens",
+    "welcomeBody": "先选语言和 Cookie 偏好。这两项随时可以在设置里改。",
+    "languageLabel": "语言",
+    "consentLabel": "Cookie",
+    "consentMinimal": "仅必要",
+    "consentFull": "必要 + 分析",
+    "quickTitle": "你的第一张命盘",
+    "quickBody": "只需要几项基本信息即可起盘。出生地和精确时间稍后再补。",
+    "sampleTitle": "先看一眼",
+    "sampleBody": "下面是 AI 解读样例。点 \"开始解读\" 生成你自己的那一份。",
+    "sampleStart": "开始解读",
+    "finishGoCharts": "完成",
+    "samplePreview": "日主得月令之气，事业根基稳固。流年天干呈渐进上行之势，秋季机遇尤多，留意贵人提携。"
+  },
   "disclaimer": {
     "footer": "本工具基于传统命理研究，仅供文化参考与个人探索，不构成医疗、法律、财务、投资或心理咨询建议。"
   }

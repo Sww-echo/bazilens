@@ -4,8 +4,9 @@ import { NavBar } from './NavBar'
 import { Footer } from './Footer'
 import { BottomTabs } from './BottomTabs'
 import { CookieConsent } from './CookieConsent'
+import { OnboardingGate } from './OnboardingGate'
 
-const ROUTES_WITHOUT_NAV = [/^\/auth\//, /^\/chart\/new$/, /^\/chart\/[^/]+$/, /^\/reading\/new$/]
+const ROUTES_WITHOUT_NAV = [/^\/auth\//, /^\/chart\/new$/, /^\/chart\/[^/]+$/, /^\/reading\/new$/, /^\/onboarding$/]
 const ROUTES_WITH_TABS = [/^\/charts$/, /^\/readings$/, /^\/reading\/[^/]+$/, /^\/reports$/, /^\/report\/[^/]+$/, /^\/account$/, /^\/admin/]
 const ROUTES_WITH_FOOTER = [/^\/$/, /^\/privacy$/, /^\/terms$/, /^\/disclaimer$/, /^\/auth\//, /^\/report\/[^/]+$/, /^\/upgrade$/]
 
@@ -21,6 +22,7 @@ export function Layout() {
 
   return (
     <div className="flex min-h-screen flex-col bg-[--color-paper]">
+      <OnboardingGate />
       {!hideNav && <NavBar />}
       <main className="flex-1">
         <Outlet />

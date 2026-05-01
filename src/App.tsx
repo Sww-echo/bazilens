@@ -26,6 +26,7 @@ const AccountPage         = lazy(() => import('@/pages/account/AccountPage'))
 const UpgradePage         = lazy(() => import('@/pages/upgrade/UpgradePage'))
 const AdminTicketsPage    = lazy(() => import('@/pages/admin/TicketsPage'))
 const AdminStatusPage     = lazy(() => import('@/pages/admin/StatusPage'))
+const OnboardingPage      = lazy(() => import('@/pages/onboarding/OnboardingPage'))
 
 export default function App() {
   const setUser = useAuthStore((s) => s.setUser)
@@ -79,6 +80,7 @@ export default function App() {
               <Route path="/upgrade" element={<UpgradePage />} />
               <Route path="/admin/tickets" element={<AdminTicketsPage />} />
               <Route path="/admin/status" element={<AdminStatusPage />} />
+              <Route path="/onboarding" element={<OnboardingPage />} />
               <Route path="*" element={<Navigate to="/" replace />} />
             </Route>
           </Routes>
