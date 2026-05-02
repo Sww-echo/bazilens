@@ -8,8 +8,8 @@
 
 <!-- @@@auto:current-status -->
 - **Active File**: `journal-1.md`
-- **Total Sessions**: 1
-- **Last Active**: 2026-05-01
+- **Total Sessions**: 2
+- **Last Active**: 2026-05-02
 <!-- @@@/auto:current-status -->
 
 ---
@@ -19,7 +19,7 @@
 <!-- @@@auto:active-documents -->
 | File | Lines | Status |
 |------|-------|--------|
-| `journal-1.md` | ~90 | Active |
+| `journal-1.md` | ~196 | Active |
 <!-- @@@/auto:active-documents -->
 
 ---
@@ -29,6 +29,7 @@
 <!-- @@@auto:session-history -->
 | # | Date | Title | Commits | Branch |
 |---|------|-------|---------|--------|
+| 2 | 2026-05-02 | Hygiene + observability + onboarding + CI fix | `dfbe3cd`, `30722fb`, `2d9244c`, `fe7cfa6` | `main` |
 | 1 | 2026-05-01 | Mobile UI rebuild from design mockups | `22d58aa`, `97a62ce` | `main` |
 <!-- @@@/auto:session-history -->
 

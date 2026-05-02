@@ -3,7 +3,7 @@
 > Snapshot of what's been built vs. what's pending. Updated in-tree so any
 > future Claude / Cursor session can pick up without recovering context.
 
-Last updated: 2026-05-01
+Last updated: 2026-05-02
 
 ---
 
@@ -46,15 +46,23 @@ Last updated: 2026-05-01
 ### Frontend UI (`src/pages/` + `src/components/`)
 Mobile-first rebuild driven by `docs/ui/` mockups (commits `22d58aa`, `97a62ce`).
 - Layout system: route-aware `Layout` switches NavBar / BottomTabs / Footer; new `BottomTabs` component (app + admin variants); new `UpgradeModal`.
-- 11 pages built / rebuilt:
+- 12 pages built / rebuilt:
   - Public: `LandingPage`, `DisclaimerPage`
   - Auth: `SignInPage` (magic-link + Google + Apple)
+  - Onboarding: `OnboardingPage` (3-step Welcome / Quick Chart / Sample Reading; auto-redirect via `OnboardingGate`, skippable, `localStorage` flag)
   - Chart: `ChartListPage`, `ChartNewPage` (BaZi/紫微/合 + true-solar option), `ChartDetailPage` (4-pillar grid + 五行 SVG donut, reads real `chart_data`)
   - Reading: `ReadingListPage`, `ReadingNewPage` (scene pills + 总览 card + 5-star rating + UpgradeModal on quota exhaustion)
   - Report: `ReportListPage`, `ReportDetailPage` (status / progress / ready / failed)
-  - Account: `AccountPage` (profile + subscription + quota + privacy/data + delete)
+  - Account: `AccountPage` (profile + avatar from `user_metadata` + subscription + quota + privacy/data + delete)
   - Upgrade: `UpgradePage` (Monthly/Annual toggle, 3 tiers, one-time PDF, FAQ)
   - Admin: `TicketsPage`, `StatusPage`
+
+### Frontend infrastructure
+- `ErrorBoundary` — catches render errors, reports to Sentry, branded fallback UI with reload + go-home buttons (dev mode shows stack).
+- `Toast` system — provider + `useToast` hook, auto-dismiss 4.5s, replaces native `alert()`.
+- `lib/observability.ts` — Sentry + PostHog init gated by `consentStore` (no init unless user opts in; re-evaluates on consent change).
+- i18n — 3 locales (zh-CN / zh-TW / en), 9 namespaces (`landing` / `signIn` / `chart` / `reading` / `upgrade` / `account` / `tickets` / `onboarding` / `error`), `Trans` interpolation for SignIn link composition.
+- Typecheck — strict mode passes (0 errors); legacy mingyu engine isolated via `noUnusedLocals=false` + targeted excludes.
 
 ### Backend (`supabase/`)
 - `config.toml` (Auth + OAuth Google/Apple + Storage)
@@ -87,14 +95,18 @@ Mobile-first rebuild driven by `docs/ui/` mockups (commits `22d58aa`, `97a62ce`)
 
 **Total: ~2,400 lines of Edge Function code, 4 migrations, 8 functional endpoints.**
 
+### CI / DevX
+- `.github/workflows/ci.yml` — typecheck + tests (`tsx --test`) + Vite build run on push/PR (Node 20.x, all green on `fe7cfa6`).
+- Test cleanup — removed 18 mingyu-era tests that referenced deleted UI source files or assertions against the old `styles.css` rules; remaining 21 test files / 397 tests (bazi engine + divination algorithms) all pass.
+
 ### Trellis tasks (planning state)
 - `04-30-bootstrap-rebrand` — prd + implement.jsonl filled
-- `04-30-supabase-init` — implementation done in tree, prd not yet written
-- `04-30-shared-utilities` — implementation done in tree, prd not yet written
-- `04-30-reading-edge-function` — implementation done in tree, prd not yet written
-- `04-30-stripe-checkout-webhook` — implementation done in tree, prd not yet written
-- `04-30-pdf-report-generate` — implementation done in tree, prd not yet written
-- `04-30-privacy-compliance` — implementation done in tree, prd not yet written
+- `04-30-supabase-init` — implementation done in tree, **prd written**
+- `04-30-shared-utilities` — implementation done in tree, **prd written**
+- `04-30-reading-edge-function` — implementation done in tree, **prd written**
+- `04-30-stripe-checkout-webhook` — implementation done in tree, **prd written**
+- `04-30-pdf-report-generate` — implementation done in tree, **prd written**
+- `04-30-privacy-compliance` — implementation done in tree, **prd written**
 
 ---
 
@@ -133,11 +145,16 @@ behalf of the user.
 These can be done in future sessions. Numbered in suggested execution order:
 
 ### Frontend follow-ups (post-UI)
-22. i18n alignment — new pages contain inline EN/CN strings; consolidate into `react-i18next` keys.
+~~22. i18n alignment — new pages contain inline EN/CN strings; consolidate into `react-i18next` keys.~~ — done (3 locales × 9 namespaces; SignIn / Account / Upgrade / Tickets / Landing / Footer / Reading / Onboarding wired).
 23. Browser smoke tests of golden paths (signup → chart → reading → report → upgrade).
-24. Replace SVG avatar placeholder in `AccountPage` with `auth.user.user_metadata.avatar_url`.
-25. Wire `/admin/status` to real Supabase health rather than hardcoded service rows.
+~~24. Replace SVG avatar placeholder in `AccountPage` with `auth.user.user_metadata.avatar_url`.~~ — done (with initials fallback).
+25. Wire `/admin/status` to real Supabase health rather than hardcoded service rows. **Blocked on Supabase project provisioning.**
 26. UI tests (React Testing Library) — currently 0 coverage.
+
+### Frontend follow-ups (newly surfaced)
+- TicketsPage card-level copy still hardcoded EN; rest of the page is i18n-wired.
+- Suspense fallback `加载中…` is plain text — could brand with skeleton.
+- Onboarding step 3 uses pre-rendered sample text; revisit if real-LLM preview becomes affordable.
 
 ### Bootstrap completion
 1. Run `npm install` and verify `npm run typecheck` passes (will likely surface
@@ -174,10 +191,10 @@ These can be done in future sessions. Numbered in suggested execution order:
 
 ### Operations
 17. Font subsetting CI script (`scripts/build-font-subset.sh`)
-18. GitHub Actions: lint + typecheck + supabase migration linter
+~~18. GitHub Actions: lint + typecheck + supabase migration linter~~ — typecheck + tests + vite build shipped (`.github/workflows/ci.yml`); migration linter still TODO.
 19. Vercel deployment
 20. Schedule daily cron for `scheduled-purge` (Supabase pg_cron or external)
-21. Configure Sentry + PostHog projects (DSN values in `.env`)
+~~21. Configure Sentry + PostHog projects (DSN values in `.env`)~~ — code wired (`lib/observability.ts`); awaits user's account creation + DSN values.
 
 ---
 
