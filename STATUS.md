@@ -3,7 +3,7 @@
 > Snapshot of what's been built vs. what's pending. Updated in-tree so any
 > future Claude / Cursor session can pick up without recovering context.
 
-Last updated: 2026-05-02
+Last updated: 2026-05-11
 
 ---
 
@@ -115,10 +115,10 @@ Mobile-first rebuild driven by `docs/ui/` mockups (commits `22d58aa`, `97a62ce`)
 External account / key provisioning. None of these can be done by Claude on
 behalf of the user.
 
-- [ ] Register Supabase project, save URL + ANON_KEY + SERVICE_ROLE_KEY
+- [x] **Supabase project** — `thsxfuvbawnfajjpxfra` (sww, ap-northeast-2, PG17). URL + ANON_KEY + SERVICE_ROLE_KEY in `.env.local` / `.env.functions.local`. Linked, migrated, deployed, seeded.
 - [ ] Apply for Anthropic API ($10 starter)
 - [ ] Apply for OpenAI API + request **Zero Data Retention** (`zdr@openai.com`)
-- [ ] Apply for DeepSeek API
+- [x] **DeepSeek API key** — `DEEPSEEK_API_KEY` set as Supabase secret.
 - [ ] Register Stripe (Web KYC; bank account / Wise; W-8BEN tax form)
 - [ ] **Apply for Apple Developer ($99 — submit Day 1, takes 1-2 days)**
 - [ ] Register Resend account, verify sending domain
@@ -127,8 +127,8 @@ behalf of the user.
 - [ ] Register social accounts: 小红书海外 + Twitter/X + 公众号订阅号
 - [ ] **Domain**: register `bazilens.com` (or fallback `bazilens.app`); configure DNS once Vercel project exists
 - [ ] **Trademark check**: USPTO + EUIPO search for "BaziLens"
-- [ ] Generate `PII_ENCRYPTION_KEY`: `openssl rand -base64 32`
-- [ ] Generate `CRON_SECRET`: `openssl rand -hex 32`
+- [x] **`PII_ENCRYPTION_KEY`** generated and set as Supabase secret.
+- [x] **`CRON_SECRET`** generated and set as Supabase secret.
 - [ ] Create Stripe Products + Prices and tag with lookup_keys:
   - `plus_monthly` ($4.99) / `plus_yearly` ($39.99)
   - `pro_monthly` ($9.99) / `pro_yearly` ($79.99)
@@ -163,21 +163,19 @@ These can be done in future sessions. Numbered in suggested execution order:
    `.trellis/spec/frontend/type-safety.md`.
 
 ### Supabase end-to-end
-3. `supabase init` (locally) and `supabase link --project-ref <ref>`
-4. `supabase db push` to deploy migrations to remote
-5. `supabase functions deploy reading checkout stripe-webhook report-generate
-   data-export account-delete scheduled-purge`
-6. `supabase secrets set` for: `ANTHROPIC_API_KEY`, `OPENAI_API_KEY`,
-   `DEEPSEEK_API_KEY`, `STRIPE_SECRET_KEY`, `STRIPE_WEBHOOK_SECRET`,
-   `RESEND_API_KEY`, `APP_URL`, `CORS_ALLOW_ORIGIN`, `PII_ENCRYPTION_KEY`,
-   `PII_KEY_VERSION=1`, `CRON_SECRET`.
-7. Run `npm run supabase:types` to regenerate `src/types/database.types.ts`.
+~~3. `supabase init` (locally) and `supabase link --project-ref <ref>`~~ — done; linked to `thsxfuvbawnfajjpxfra`.
+~~4. `supabase db push` to deploy migrations to remote~~ — done; 4/4 migrations applied (0001_init / 0002_quota_rpc / 0003_support_tickets / 0004_privacy_compliance). `seed.sql` also applied (reports bucket + 7 prompt placeholders).
+~~5. `supabase functions deploy reading checkout stripe-webhook report-generate data-export account-delete scheduled-purge`~~ — done; 8/8 functions ACTIVE (also includes chart-create).
+6. `supabase secrets set` — partial. Done: APP_URL, CORS_ALLOW_ORIGIN, CRON_SECRET, PDF_SIGNED_URL_TTL_SECONDS, PII_ENCRYPTION_KEY, PII_KEY_VERSION, **DEEPSEEK_API_KEY**. Still needed: ANTHROPIC_API_KEY, OPENAI_API_KEY, STRIPE_SECRET_KEY, STRIPE_WEBHOOK_SECRET, RESEND_API_KEY.
+~~7. Run `npm run supabase:types` to regenerate `src/types/database.types.ts`~~ — done (1186 lines from live schema; replaces hand-rolled placeholder). Script also updated `--local` → `--linked`.
 8. End-to-end smoke test:
-   - signup → magic link → profile auto-created
-   - create chart → see in DB (encrypted fields opaque)
-   - call `/reading` with curl → SSE flows
-   - Stripe Checkout PDF → webhook fires → report-generate runs
-   - download PDF from emailed signed URL
+   - chart-create gates 401 without user JWT ✓ (auth wall works)
+   - scheduled-purge gates 403 without CRON_SECRET ✓ (signature wall works)
+   - signup → magic link → profile auto-created — **not run** (needs browser)
+   - create chart → see in DB (encrypted fields opaque) — **not run** (needs user JWT)
+   - call `/reading` with curl → SSE flows — pending; DeepSeek key now in place so free-tier path is unblocked, just need a chart row + user JWT.
+   - Stripe Checkout PDF → webhook → report-generate — pending Stripe keys.
+   - download PDF from emailed signed URL — pending Resend.
 
 ### Frontend (waits on UI design)
 ~~9. Onboarding flow + cookie consent~~ — basic CookieConsent shipped; onboarding still spartan

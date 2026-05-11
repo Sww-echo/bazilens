@@ -194,3 +194,106 @@ Round 6 (18 files): all deletions under `tests/`.
 ### Next Steps
 
 - None - task complete
+
+
+## Session 3: Supabase bootstrap (link + migrations + functions + types)
+
+**Date**: 2026-05-11
+**Task**: Supabase bootstrap (link + migrations + functions + types)
+**Branch**: `main`
+
+### Summary
+
+CLI v1→v2 upgrade; linked thsxfuvbawnfajjpxfra; 4 migrations + seed applied; 8 functions ACTIVE; 7 secrets set (incl. DEEPSEEK_API_KEY); real DB types regenerated (1186 lines); smoke tests confirm auth gates work.
+
+### Main Changes
+
+## Context
+
+User provisioned the Supabase project (`thsxfuvbawnfajjpxfra`, named "sww", region `ap-northeast-2`, Postgres 17) and shared the URL, anon key, service-role key, and a personal access token. Goal: get the backend end-to-end from a dead repo to a deployed, smoke-tested stack so future LLM/Stripe/Resend integrations have a working substrate.
+
+## Work Done (commit `5e0238d`)
+
+### CLI upgrade
+- `supabase` devDependency v1.226.4 → **v2.98.2**. v2 config schema is stricter and rejected two legacy fields:
+  - `auth.refresh_token_rotation_enabled` (always-on in v2; removed)
+  - `[functions] verify_jwt = false` (now must be per-function)
+- Split global `verify_jwt = false` into 8 per-function blocks. User-facing endpoints keep JWT verification on (`chart-create`, `reading`, `checkout`, `data-export`, `account-delete`); webhook/cron endpoints set it off because they use signatures / shared-secrets (`stripe-webhook`, `report-generate`, `scheduled-purge`).
+- `supabase/config.toml` `[db].major_version` 15 → 17 to match remote PG version.
+- `package.json` `supabase:types` script: `--local` → `--linked` so it pulls from the linked project's schema.
+
+### Env files (gitignored)
+- `.env.local` (frontend): VITE_SUPABASE_URL, VITE_SUPABASE_ANON_KEY, VITE_APP_URL.
+- `.env.functions.local` (server / deploy): SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY, PII_ENCRYPTION_KEY (openssl rand -base64 32), PII_KEY_VERSION=1, CRON_SECRET (openssl rand -hex 32), APP_URL, CORS_ALLOW_ORIGIN, PDF_SIGNED_URL_TTL_SECONDS, plus LLM/Stripe/Resend placeholders.
+
+### Supabase provisioning (live project)
+- `supabase link --project-ref thsxfuvbawnfajjpxfra` via `SUPABASE_ACCESS_TOKEN` (no browser OAuth).
+- `supabase db push --include-all`: 4 migrations applied (0001_init / 0002_quota_rpc / 0003_support_tickets / 0004_privacy_compliance). `supabase migration list` confirms local ↔ remote alignment.
+- `supabase db query --linked --file supabase/seed.sql`: `reports` Storage bucket + 7 `prompt_versions` placeholder rows seeded.
+- `supabase secrets set --env-file .env.functions.local`: 6 secrets pushed (APP_URL, CORS_ALLOW_ORIGIN, CRON_SECRET, PDF_SIGNED_URL_TTL_SECONDS, PII_ENCRYPTION_KEY, PII_KEY_VERSION). `SUPABASE_*` prefixed vars skipped — Supabase auto-injects URL + service-role key into Edge Function runtime, so they don't need to be set as user secrets.
+- `supabase functions deploy <name>`: **8/8 functions ACTIVE** (chart-create, reading, checkout, stripe-webhook, report-generate, data-export, account-delete, scheduled-purge).
+
+### Types regeneration
+- `supabase gen types typescript --linked > src/types/database.types.ts` produced a 1186-line file with `__InternalSupabase.PostgrestVersion: "14.5"`. Replaces the hand-rolled placeholder. Adds proper types for `incidents`, `profiles`, `prompt_versions`, `usage_quotas` that the placeholder didn't cover.
+- First run accidentally captured stderr `WARN:` lines into the file (used `>` without `2>/dev/null`); fixed by re-running with stderr suppressed. **Lesson for future runs**: always redirect stderr away when piping `supabase gen types` to a file.
+- Typecheck (`npx tsc --noEmit -p tsconfig.app.json`): 0 errors against the real types.
+
+### Smoke tests
+- `POST /functions/v1/chart-create` with anon-only header → `HTTP 401 UNAUTHORIZED_NO_AUTH_HEADER`. Auth wall works.
+- `POST /functions/v1/scheduled-purge` with wrong bearer → `HTTP 403 forbidden`. Cron signature wall works.
+- End-to-end signup → chart → reading not run (needs browser + user JWT).
+
+### Post-session: DEEPSEEK_API_KEY
+- User shared a DeepSeek API key after the commit; pushed via `supabase secrets set DEEPSEEK_API_KEY=...`. Now reading endpoint's Free-tier path (DeepSeek) is unblocked — pending a chart row + user JWT to actually invoke it.
+
+## Files Touched
+
+| Path | Change |
+|---|---|
+| `package.json`, `package-lock.json` | bump `supabase` devDep + script `--linked` |
+| `supabase/config.toml` | remove deprecated auth field; per-function verify_jwt; PG 17 |
+| `src/types/database.types.ts` | regenerated from live schema (1186 lines) |
+
+(`.env.local`, `.env.functions.local` written but gitignored — not in commit.)
+
+## Verification
+
+- 4/4 migrations on remote (verified via `supabase migration list`).
+- `select id from storage.buckets` → `reports`. `select count(*) from public.prompt_versions` → 7.
+- `supabase functions list` → all 8 ACTIVE, version 1.
+- `supabase secrets list` → 7 entries (6 from env-file + DEEPSEEK_API_KEY).
+- Smoke 401/403 responses as expected.
+- typecheck clean.
+
+## Status
+
+[OK] Completed. Supabase substrate is live and code is in sync with it.
+
+## Next Steps
+
+- **Unblock LLM reading path**: now that DeepSeek is set, drive an end-to-end test by creating a chart through chart-create with a real user JWT (sign in via magic link in a browser, grab token from network tab, curl).
+- **Anthropic + OpenAI API keys** (when user has them): set via `supabase secrets set` to enable Plus + Pro tier routing.
+- **Stripe**: KYC + create Products/Prices/lookup_keys → set STRIPE_SECRET_KEY + STRIPE_WEBHOOK_SECRET → test checkout + webhook.
+- **Resend**: verify sending domain → set RESEND_API_KEY → exercises the PDF "ready" email.
+- **OAuth providers**: Configure Google + Apple in Supabase dashboard Auth settings; the redirect URLs in config.toml only document them.
+- **pg_cron**: schedule `scheduled-purge` to run daily via the dashboard SQL editor or migration 0005.
+- **Frontend smoke**: `npm run dev` from a local machine (sandbox has no browser), validate sign-in → chart → reading happy path.
+
+
+### Git Commits
+
+| Hash | Message |
+|------|---------|
+| `5e0238d` | (see git log) |
+
+### Testing
+
+- [OK] (Add test results)
+
+### Status
+
+[OK] **Completed**
+
+### Next Steps
+
+- None - task complete
