@@ -13,7 +13,7 @@ max_rows = 1000
 [db]
 port = 54322
 shadow_port = 54320
-major_version = 15
+major_version = 17
 
 [db.pooler]
 enabled = false
@@ -43,7 +43,6 @@ enabled = true
 site_url = "http://localhost:5173"
 additional_redirect_urls = ["http://localhost:5173/auth/callback"]
 jwt_expiry = 3600
-refresh_token_rotation_enabled = true
 enable_signup = true
 enable_anonymous_sign_ins = false
 minimum_password_length = 8
@@ -80,5 +79,29 @@ inspector_port = 8083
 [analytics]
 enabled = false
 
-[functions]
-verify_jwt = false   # we validate JWT inside each function (see _shared/auth.ts)
+# Per-function settings. We validate JWT inside each function (see _shared/cors.ts).
+# Webhook + cron endpoints must NOT verify the user JWT — they use their own
+# signature / shared-secret schemes.
+[functions.chart-create]
+verify_jwt = true
+
+[functions.reading]
+verify_jwt = true
+
+[functions.checkout]
+verify_jwt = true
+
+[functions.data-export]
+verify_jwt = true
+
+[functions.account-delete]
+verify_jwt = true
+
+[functions.report-generate]
+verify_jwt = false
+
+[functions.stripe-webhook]
+verify_jwt = false
+
+[functions.scheduled-purge]
+verify_jwt = false
