@@ -7,7 +7,10 @@
     "dev": "vite",
     "build": "vite build",
     "preview": "vite preview",
-    "test": "tsx --test tests/*.test.ts",
+    "test": "tsx --test tests/*.test.ts && vitest run",
+    "test:node": "tsx --test tests/*.test.ts",
+    "test:ui": "vitest run",
+    "test:ui:watch": "vitest",
     "typecheck": "tsc --noEmit",
     "supabase:types": "supabase gen types typescript --linked > src/types/database.types.ts",
     "smoke:e2e": "tsx scripts/smoke-e2e.ts"
@@ -31,14 +34,20 @@
   },
   "devDependencies": {
     "@tailwindcss/vite": "^4.0.0",
+    "@testing-library/jest-dom": "^6.9.1",
+    "@testing-library/react": "^16.3.2",
+    "@testing-library/user-event": "^14.6.1",
     "@types/node": "^24.6.0",
     "@types/react": "^19.1.12",
     "@types/react-dom": "^19.1.9",
     "@vitejs/plugin-react": "^5.0.2",
+    "@vitest/ui": "^4.1.6",
+    "jsdom": "^29.1.1",
     "supabase": "^2.98.2",
     "tailwindcss": "^4.0.0",
     "tsx": "^4.21.0",
     "typescript": "^5.9.2",
-    "vite": "^7.1.7"
+    "vite": "^7.1.7",
+    "vitest": "^4.1.6"
   }
 }
