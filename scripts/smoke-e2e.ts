@@ -1,12 +1,13 @@
 #!/usr/bin/env -S node --experimental-strip-types
 // End-to-end smoke test: create test user → chart-create → reading SSE → cleanup.
-// Run with: node --experimental-strip-types scripts/smoke-e2e.ts
+// Run with: npm run smoke:e2e
 //
 // Requires: .env.functions.local (SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY)
 //           .env.local           (VITE_SUPABASE_ANON_KEY)
 
 import { createClient } from '@supabase/supabase-js'
 import { readFileSync } from 'node:fs'
+import { baziCalculator } from '../src/utils/bazi/baziCalculator.ts'
 
 function loadEnv(path: string): Record<string, string> {
   const out: Record<string, string> = {}
@@ -84,6 +85,19 @@ async function main() {
     })
 
     await step('POST /functions/v1/chart-create', async () => {
+      // Real engine call — produces full BaziChartResult with luckInfo, liunian,
+      // shensha, etc. Matches what the browser's buildBaziChartInput sends.
+      const bazi = baziCalculator.calculateBazi({
+        year: 1995,
+        month: 6,
+        day: 15,
+        timeIndex: 6, // 午时
+        gender: 'male',
+        isLunar: false,
+        isLeapMonth: false,
+        useTrueSolarTime: false,
+      })
+
       const body = {
         type: 'bazi',
         title: 'smoke test chart',
@@ -91,19 +105,7 @@ async function main() {
           gender: 'male', dateType: 'solar',
           year: 1995, month: 6, day: 15, timeIndex: 6,
         },
-        chart_data: {
-          kind: 'bazi',
-          bazi: {
-            pillars: {
-              year: { gan: '乙', zhi: '亥', ganZhi: '乙亥' },
-              month: { gan: '壬', zhi: '午', ganZhi: '壬午' },
-              day: { gan: '甲', zhi: '寅', ganZhi: '甲寅' },
-              hour: { gan: '庚', zhi: '午', ganZhi: '庚午' },
-            },
-            dayMaster: { gan: '甲', element: '木', yinYang: '阳' },
-            wuxingStrength: { percentages: { 金: 20, 木: 30, 水: 15, 火: 20, 土: 15 } },
-          },
-        },
+        chart_data: { kind: 'bazi', bazi },
       }
       const r = await fetch(`${SUPABASE_URL}/functions/v1/chart-create`, {
         method: 'POST',
@@ -119,7 +121,8 @@ async function main() {
       const j = JSON.parse(text)
       chartId = j.chart?.id ?? j.id ?? ''
       if (!chartId) throw new Error(`no chart id in response: ${text.slice(0, 300)}`)
-      console.log(`  chart_id=${chartId.slice(0, 8)}`)
+      const dayunCount = bazi.luckInfo?.cycles?.length ?? 0
+      console.log(`  chart_id=${chartId.slice(0, 8)}, dayun_cycles=${dayunCount}`)
     })
 
     await step('POST /functions/v1/reading (SSE)', async () => {
