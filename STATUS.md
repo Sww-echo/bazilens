@@ -3,7 +3,7 @@
 > Snapshot of what's been built vs. what's pending. Updated in-tree so any
 > future Claude / Cursor session can pick up without recovering context.
 
-Last updated: 2026-05-11
+Last updated: 2026-05-12
 
 ---
 
@@ -98,6 +98,14 @@ Mobile-first rebuild driven by `docs/ui/` mockups (commits `22d58aa`, `97a62ce`)
 ### CI / DevX
 - `.github/workflows/ci.yml` — typecheck + tests (`tsx --test`) + Vite build run on push/PR (Node 20.x, all green on `fe7cfa6`).
 - Test cleanup — removed 18 mingyu-era tests that referenced deleted UI source files or assertions against the old `styles.css` rules; remaining 21 test files / 397 tests (bazi engine + divination algorithms) all pass.
+- `scripts/smoke-e2e.ts` + `npm run smoke:e2e` — full end-to-end smoke: admin.createUser → signInWithPassword → POST /chart-create → POST /reading (SSE) with full streamed text capture → admin.deleteUser cleanup. Validates auth wall + JWT + PII encryption + LLM routing + SSE + quality scoring + persistence + cleanup in ~13-30s.
+
+### Prompt engineering
+- `_shared/prompts.ts:SYSTEM_PROMPT_FORTUNE_SCHOLAR` — strict system prompt covering 3 blocks:
+  - 【分析准则】 mingyu's 6 reasoning rules (旺衰→格局→十神→神煞 ordering, 用神 priority, conflict surfacing).
+  - 【数据约束（严格）】 anti-hallucination — input 字段未出现的内容禁止确定性输出(particularly 大运/流年干支/起运虚岁). Mandates explicit "input 未提供..." disclaimer + conditional phrasing as fallback.
+  - 【内容安全】 BaziLens-specific (no 克夫/克妻/克子, no medical/death/legal predictions, append disclaimer).
+- `prompt_versions` table — 12 active templates: 7 bazi-pdf chapters (`overview/personality/fortune/dayun/family/advice/...`) seeded from migration 0001 + 5 bazi-reading scenes (`career/wealth/marriage/health/study`) at v2 from migration 0007. v2 templates structure: 【分析路径】+ 4-section 【输出结构】 + conditional dayun handling + {{question}} interpolation.
 
 ### Trellis tasks (planning state)
 - `04-30-bootstrap-rebrand` — prd + implement.jsonl filled
@@ -164,16 +172,15 @@ These can be done in future sessions. Numbered in suggested execution order:
 
 ### Supabase end-to-end
 ~~3. `supabase init` (locally) and `supabase link --project-ref <ref>`~~ — done; linked to `thsxfuvbawnfajjpxfra`.
-~~4. `supabase db push` to deploy migrations to remote~~ — done; 4/4 migrations applied (0001_init / 0002_quota_rpc / 0003_support_tickets / 0004_privacy_compliance). `seed.sql` also applied (reports bucket + 7 prompt placeholders).
-~~5. `supabase functions deploy reading checkout stripe-webhook report-generate data-export account-delete scheduled-purge`~~ — done; 8/8 functions ACTIVE (also includes chart-create).
+~~4. `supabase db push` to deploy migrations to remote~~ — done; **7/7 migrations** applied (0001_init / 0002_quota_rpc / 0003_support_tickets / 0004_privacy_compliance / 0005_reading_scene_prompts / 0006_real_reading_prompts / 0007_reading_prompts_v2). `seed.sql` also applied (reports bucket + 7 prompt placeholders).
+~~5. `supabase functions deploy reading checkout stripe-webhook report-generate data-export account-delete scheduled-purge`~~ — done; 8/8 functions ACTIVE (also includes chart-create). `reading` redeployed twice after prompt iterations.
 6. `supabase secrets set` — partial. Done: APP_URL, CORS_ALLOW_ORIGIN, CRON_SECRET, PDF_SIGNED_URL_TTL_SECONDS, PII_ENCRYPTION_KEY, PII_KEY_VERSION, **DEEPSEEK_API_KEY**. Still needed: ANTHROPIC_API_KEY, OPENAI_API_KEY, STRIPE_SECRET_KEY, STRIPE_WEBHOOK_SECRET, RESEND_API_KEY.
 ~~7. Run `npm run supabase:types` to regenerate `src/types/database.types.ts`~~ — done (1186 lines from live schema; replaces hand-rolled placeholder). Script also updated `--local` → `--linked`.
 8. End-to-end smoke test:
    - chart-create gates 401 without user JWT ✓ (auth wall works)
    - scheduled-purge gates 403 without CRON_SECRET ✓ (signature wall works)
-   - signup → magic link → profile auto-created — **not run** (needs browser)
-   - create chart → see in DB (encrypted fields opaque) — **not run** (needs user JWT)
-   - call `/reading` with curl → SSE flows — pending; DeepSeek key now in place so free-tier path is unblocked, just need a chart row + user JWT.
+   - **Full happy path via `npm run smoke:e2e` PASSING** ✓ — user creation → JWT → chart-create (with encrypted PII) → reading SSE → 28-34KB streamed output from DeepSeek → quality score 100 → reading row persisted → cleanup. Verified across 4 runs with prompt iterations.
+   - signup → magic link → profile auto-created — **not run** (needs browser; magic link flow uncovered by smoke).
    - Stripe Checkout PDF → webhook → report-generate — pending Stripe keys.
    - download PDF from emailed signed URL — pending Resend.
 

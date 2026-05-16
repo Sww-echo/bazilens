@@ -297,3 +297,107 @@ User provisioned the Supabase project (`thsxfuvbawnfajjpxfra`, named "sww", regi
 ### Next Steps
 
 - None - task complete
+
+
+## Session 4: Real prompts + e2e smoke + anti-hallucination guard
+
+**Date**: 2026-05-16
+**Task**: Real prompts + e2e smoke + anti-hallucination guard
+**Branch**: `main`
+
+### Summary
+
+Built scripts/smoke-e2e.ts; ported mingyu BAZI_AI_PROMPTS into prompt_versions (migrations 0005/0006); discovered DeepSeek hallucinated dayun/liunian when input lacked them; fixed via strict system prompt rewrite + migration 0007 conditional templates; verified 0 invented dayun across post-fix smoke.
+
+### Main Changes
+
+## Context
+
+Continuation from Session 3 (Supabase bootstrap). After DeepSeek key was added, the goal shifted to: actually run the full pipeline end-to-end (proof it works), then iterate prompt quality. Two big things happened: built an automated e2e smoke harness, and identified + fixed an LLM hallucination bug discovered through that smoke.
+
+## Work Done
+
+### Round 1 — Real prompts + e2e smoke (commit `44633c3`)
+
+Built `scripts/smoke-e2e.ts` + `npm run smoke:e2e`. Full pipeline:
+1. `admin.createUser` via service_role
+2. `signInWithPassword` to obtain a real user JWT (815 chars)
+3. POST `/functions/v1/chart-create` with chart_data containing 4 pillars + dayMaster + wuxingStrength
+4. POST `/functions/v1/reading` SSE stream, capture full text
+5. `admin.deleteUser` cleanup
+
+First run after migration 0005 (one-line placeholder prompts) returned 20.6 KB of generic prose. Then migration 0006 ported mingyu's `BAZI_AI_PROMPTS.single` instructions verbatim — output jumped to 33.6 KB with pillar-by-pillar analysis, specific dayun timing, actionable strategy advice. First-token latency 97-165ms, full reading 12.8-20.9s, quality_score 100 across all runs.
+
+Source of "real prompts": `src/utils/ai/aiPrompts.ts` (273 lines) was preserved verbatim from mingyu upstream. It has:
+- `BASE_SYSTEM_ROLE` (classical-source scholar role)
+- `BASE_SYSTEM_RULES` (6 reasoning + safety rules)
+- 6 scene templates with `{id, prompt, scene}` shape
+
+For BaziLens architecture, system role + rules live in `_shared/prompts.ts:SYSTEM_PROMPT_FORTUNE_SCHOLAR` (hardcoded in edge function), and scene templates live in `prompt_versions` DB table (loaded at request time by `loadPromptTemplate`). So migration 0006 only needed to populate the user-prompt half.
+
+### Round 2 — Anti-hallucination guard (commit `75b4e73`)
+
+User audited the smoke output and noticed: AI confidently asserted "您正处于丙申大运（2026-2035年）, 流年丙午（2026）丁未（2027）..." — but `chart_data` in the smoke contained NO dayun or liunian fields. Multiple smoke runs returned different invented dayun cycles (丙申 vs 辛巳), confirming hallucination.
+
+Root cause was two-layer:
+1. `_shared/prompts.ts:SYSTEM_PROMPT_FORTUNE_SCHOLAR` was BaziLens's 5-line safety wrapper, lacking mingyu's strict "只基于提供的命盘、岁运和问题作答" rule.
+2. User-prompt templates from 0006 commanded "结合大运与流年取用" — which directly invited the model to use dayun even when absent. User-prompt overrode system in DeepSeek.
+
+Fix:
+- Rewrote `SYSTEM_PROMPT_FORTUNE_SCHOLAR` as 3 blocks: 【分析准则】 (mingyu's 6 reasoning rules), 【数据约束（严格）】 (explicit enumeration of fields that must not be invented: 大运起止年份、大运干支、流年干支、当前所行运、起运虚岁、流月; mandates "input 未提供..." disclaimer + conditional phrasing as fallback), 【内容安全】 (preserved BaziLens guards).
+- Migration 0007 rewrote all 5 reading-scene templates to use conditional language ("如 input 提供大运/流年则结合应期，否则仅作方向性提示") and per-section explicit fallback instructions.
+
+Smoke after deploy confirmed the fix. AI now literally writes the disclaimer verbatim:
+> "**input 未提供大运/流年信息，本节仅作方向性提示。**"
+And switches to conditional phrasing ("当遇到水木旺相的运势") for all timing-related advice. Zero invented dayun cycles across the verification run. Output quality maintained (29.7 KB, q=100, pillar-by-pillar analysis intact).
+
+## Files Touched
+
+| Round | Files |
+|---|---|
+| 1 (`44633c3`) | `scripts/smoke-e2e.ts` (new), `supabase/migrations/0005_reading_scene_prompts.sql` (new), `supabase/migrations/0006_real_reading_prompts.sql` (new), `package.json` (smoke:e2e script) |
+| 2 (`75b4e73`) | `supabase/functions/_shared/prompts.ts` (system prompt rewrite), `supabase/migrations/0007_reading_prompts_v2.sql` (new) |
+
+## Verification
+
+- `npm run smoke:e2e` — 4 consecutive successful runs across prompt iterations. Each: ~13-31s end-to-end including LLM streaming. Test user always cleaned up.
+- DB state: `select id, scene, notes from public.prompt_versions where category='bazi-reading'` shows all 5 entries at `real-prompt-v2 (anti-hallucination)`.
+- Manual audit of post-fix smoke output: 0 specific dayun干支 / 0 invented 流年 / 1 explicit "input 未提供" disclaimer / multiple conditional fallback phrasings.
+
+## Lessons / Specs to Capture
+
+- **LLM follows user-prompt over system-prompt when they conflict.** Constraints belong in BOTH layers, not just system. (Candidate for `.trellis/spec/guides/ai-quality-eval.md` addition.)
+- **DeepSeek hallucinates dayun/liunian even when input lacks them**, unless explicitly told not to. Different runs invent different cycles — easy to mistake for plausible output if you don't audit specific fields.
+- **Smoke harness pattern** (`admin.createUser → signInWithPassword → exercise endpoints → admin.deleteUser`) is the right primitive for any user-JWT-gated endpoint test. Future Stripe / Resend / report-generate smokes can reuse it.
+
+## Status
+
+[OK] Completed.
+
+## Next Steps
+
+- Capture the user-prompt-overrides-system-prompt lesson into `.trellis/spec/guides/ai-quality-eval.md` (via `trellis-update-spec` skill).
+- When ANTHROPIC_API_KEY arrives: set secret + extend smoke to test Pro tier routing + fallback (currently only DeepSeek path is exercised).
+- Real dayun: extend chart-create to compute + persist `chart_data.luckInfo` via mingyu engine, then loosen the "must say not provided" rule when data is actually present. This unlocks honest specific-year advice.
+- Frontend smoke: `npm run dev` on a local machine, validate sign-in → onboarding → chart → reading happy path with magic link email (Supabase auto-sender, 4/day cap).
+- pg_cron: schedule `scheduled-purge` daily via dashboard SQL editor.
+
+
+### Git Commits
+
+| Hash | Message |
+|------|---------|
+| `44633c3` | (see git log) |
+| `75b4e73` | (see git log) |
+
+### Testing
+
+- [OK] (Add test results)
+
+### Status
+
+[OK] **Completed**
+
+### Next Steps
+
+- None - task complete

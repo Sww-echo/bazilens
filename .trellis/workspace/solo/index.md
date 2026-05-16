@@ -8,8 +8,8 @@
 
 <!-- @@@auto:current-status -->
 - **Active File**: `journal-1.md`
-- **Total Sessions**: 3
-- **Last Active**: 2026-05-11
+- **Total Sessions**: 4
+- **Last Active**: 2026-05-16
 <!-- @@@/auto:current-status -->
 
 ---
@@ -19,7 +19,7 @@
 <!-- @@@auto:active-documents -->
 | File | Lines | Status |
 |------|-------|--------|
-| `journal-1.md` | ~299 | Active |
+| `journal-1.md` | ~403 | Active |
 <!-- @@@/auto:active-documents -->
 
 ---
@@ -29,6 +29,7 @@
 <!-- @@@auto:session-history -->
 | # | Date | Title | Commits | Branch |
 |---|------|-------|---------|--------|
+| 4 | 2026-05-16 | Real prompts + e2e smoke + anti-hallucination guard | `44633c3`, `75b4e73` | `main` |
 | 3 | 2026-05-11 | Supabase bootstrap (link + migrations + functions + types) | `5e0238d` | `main` |
 | 2 | 2026-05-02 | Hygiene + observability + onboarding + CI fix | `dfbe3cd`, `30722fb`, `2d9244c`, `fe7cfa6` | `main` |
 | 1 | 2026-05-01 | Mobile UI rebuild from design mockups | `22d58aa`, `97a62ce` | `main` |
